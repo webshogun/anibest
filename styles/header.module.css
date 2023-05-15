@@ -1,0 +1,99 @@
+.header {
+  position: fixed;
+  width: 100%;
+  backdrop-filter: blur(10px);
+  padding: 10px 0;
+  background: #34343480;
+}
+
+.wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.logo {
+  font-size: 29px;
+  font-weight: 900;
+  line-height: 30px;
+}
+
+.menu {
+  display: flex;
+  gap: 58px;
+}
+
+.link {
+  cursor: pointer;
+  font-size: 16px;
+  line-height: 21px;
+}
+
+.login {
+  font-size: 14px;
+  line-height: 30px;
+}
+
+.register {
+  display: inline-block;
+  text-align: center;
+  width: 85px;
+  font-size: 14px;
+  line-height: 30px;
+  border-radius: 5px;
+  margin-left: 13px;
+  background: #585E92;
+}
+
+.search {
+  height: 30px;
+  display: flex;
+  align-items: center;
+  background: #D9D9D9;
+  border-radius: 5px;
+
+}
+
+.input {
+  height: 30px;
+  width: 355px;
+  padding: 0 7px;
+  color: #343434;
+}
+
+.button {
+  width: 30px;
+  height: 30px;
+}
+
+.results {
+  position: absolute;
+  margin-top: 15px;
+  overflow: auto;
+  overflow-x: hidden;
+  max-height: 500px;
+  border-radius: 5px;
+  width: 385px;
+  z-index: 1;
+}
+
+.result {
+  display: flex;
+  background: #808080;
+  width: 385px;
+  padding: 5px;
+}
+
+.poster {
+  width: 75px;
+  border-radius: 5px;
+}
+
+.search {
+  padding: 0;
+}
+
+.genres {
+  display: flex;
+  gap: 4px;
+}
