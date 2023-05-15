@@ -7,15 +7,18 @@ import styles from '@/styles/anime.module.css';
 export async function getServerSideProps (contex) {
   const { id } = contex.query;
   const { data: anime } = await supabase.from('Anime').select('*').eq('id', parseInt(id)).single();
+  const { data: characters } = await supabase.from('Characters').select('*').eq('animeId', parseInt(id));
+
 
   return {
     props: {
-      anime
+      anime,
+      characters
     }
   }
 }
 
-const AnimePage = ({ anime }) => {
+const AnimePage = ({ anime, characters }) => {
   const router = useRouter();
   const { menu } = router.query;
 
@@ -69,6 +72,36 @@ const AnimePage = ({ anime }) => {
                       {anime.genres?.map((genre) => (
                         <Link className={styles.genre} href={`/anime?genre=${genre}`} as={`/anime?genre=${genre}`} key={genre}>{genre}</Link>
                       ))}
+                    </div>
+                  </>
+                )}
+                {menu === 'characters' && (
+                  <>
+                    <h2 className={styles.heading}>Main characters</h2>
+                    <div className={styles.inner}>
+                      {characters.map((character) => {
+                        if (character.type === 'main') {
+                          return (
+                            <Link href={`/character/[id]`} as={`/character/${character.id}`} key={character.id}>
+                              <img className={styles.image} src={character.poster} alt={character.name} />
+                              <p className={styles.name}>{character.name}</p>
+                            </Link>
+                          );
+                        }
+                      })}
+                    </div>
+                    <h2 className={styles.heading}>Minor characters</h2>
+                    <div className={styles.inner}>
+                      {characters.map((character) => {
+                        if (character.type === 'Другорядний герой') {
+                          return (
+                            <Link href={`/character/[id]`} as={`/character/${character.id}`} key={character.id}>
+                              <img src={character.poster} alt={character.name} />
+                              <p>{character.name}</p>
+                            </Link>
+                          );
+                        }
+                      })}
                     </div>
                   </>
                 )}

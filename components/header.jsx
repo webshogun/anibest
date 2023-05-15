@@ -58,14 +58,16 @@ const Header = () => {
                   {searchResults.map((result) => (
                     <Link className={styles.result} key={result.id} href={`/anime/${result.id}/?menu=info`} onClick={handleSearchResultClick}>
                       <img className={styles.poster} src={result.poster} alt={result.title} />
-                      <div>
-                        <p>{result.title}</p>
-                        <span>{result.type}</span>
-                        <span> {result.year}</span>
-                        <span> {result.status}</span>
+                      <div className={styles.info}>
+                        <p className={styles.title}>{result.title}</p>
+                        <div className={styles.add}>
+                          <span className={styles.type}>{result.type}</span>
+                          <span className={styles.year}> {result.year}</span>
+                          <span className={styles.status}> {result.status}</span>
+                        </div>
                         <div className={styles.genres}>
                           {result.genres?.map((genre) => (
-                            <span>{genre}</span>
+                            <span className={styles.genre}>{genre}</span>
                           ))}
                         </div>
                       </div>

@@ -77,16 +77,37 @@
   z-index: 1;
 }
 
+.results::-webkit-scrollbar {
+  width: 10px;
+}
+
+.results::-webkit-scrollbar-track {
+  background: #313134;
+}
+
+.results::-webkit-scrollbar-thumb {
+  background: #404040;
+  border-radius: 10px;
+}
+
 .result {
   display: flex;
-  background: #808080;
+  background: #c0c0c0;
   width: 385px;
   padding: 5px;
+  gap: 10px;
+  border-bottom: 1px solid #888888;
 }
 
 .poster {
   width: 75px;
   border-radius: 5px;
+}
+
+.info {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
 }
 
 .search {
@@ -96,4 +117,23 @@
 .genres {
   display: flex;
   gap: 4px;
+}
+
+.title {
+  font-size: 15px;
+  line-height: 20px;
+  font-weight: 600;
+  color: #000;
+}
+
+.type, .year, .status, .genre {
+  font-weight: 400;
+  font-size: 13px;
+  line-height: 17px;
+  color: #000;
+}
+
+.add, .genres {
+  display: flex;
+  gap: 10px;
 }
