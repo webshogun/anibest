@@ -1,11 +1,15 @@
-import Header from '@/components/header';
 import '@/styles/globals.css'
+import Header from '@/components/header/'
+import { useRouter } from 'next/router'
 
 export default function App({ Component, pageProps }) {
-  return ( 
+  const router = useRouter()
+  const showHeaderFooter = router.pathname !== '/login'
+
+  return (
     <>
-      <Header />
+      {showHeaderFooter && <Header />}
       <Component {...pageProps} />
     </>
-   )
+  )
 }

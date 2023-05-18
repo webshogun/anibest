@@ -1,7 +1,4 @@
 import Head from 'next/head';
-import { useRouter } from 'next/router'
-import Link from 'next/link';
-import { useState } from 'react';
 import { supabase } from '@/lib/supabase';
 
 import styles from '@/styles/character.module.css';
