@@ -3,6 +3,9 @@ import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { supabase } from '@/lib/supabase';
 import styles from '@/styles/anime.module.css';
+import { useState } from 'react';
+import { useUser, useSupabaseClient } from '@supabase/auth-helpers-react';
+
 
 export async function getServerSideProps (contex) {
   const { id } = contex.query;
@@ -19,8 +22,27 @@ export async function getServerSideProps (contex) {
 }
 
 const AnimePage = ({ anime, characters }) => {
+  const user = useUser();
+  const [open, setOpen] = useState(false)
   const router = useRouter();
   const { menu } = router.query;
+  
+
+  const toggleDropdown = () => {
+    setOpen(!open);
+  };
+
+  const updateAnimeStatus = async (status) => {
+    const { error } = await supabase
+      .from('Favorites')
+      .insert([{ userId: user.id, animeId: anime.id, status: status }])
+
+    if (error) {
+      console.error('Error updating anime status:', error);
+    } else {
+      console.log('Anime status updated successfully!');
+    }
+  };
 
   const activeMenuItem = (menuItem) => {
     return menu === menuItem ? styles.active : '';
@@ -36,6 +58,14 @@ const AnimePage = ({ anime, characters }) => {
           <div className={styles.wrapper}>
             <div className={styles.left}>
               <img className={styles.poster} src={anime.poster} alt={anime.title} />
+              <button onClick={toggleDropdown}>Add to list</button>
+              {open && (
+                <div className="dropdown-menu">
+                  <button onClick={() => updateAnimeStatus('watched')}>Watched</button>
+                  <button onClick={() => updateAnimeStatus('watching')}>Watching</button>
+                  <button onClick={() => updateAnimeStatus('abandoned')}>Abandoned</button>
+                </div>
+              )}
               <ul className={styles.info}>
                 <li className={styles.item}>Type: <Link className={styles.link} href={`/anime?type=${anime.type}`} as={`/anime?type=${anime.type}`}>{anime.type}</Link></li>
                 <li className={styles.item}>Status: <Link className={styles.link} href={`/anime?status=${anime.status}`} as={`/anime?status=${anime.status}`}>{anime.status}</Link></li>
