@@ -8,7 +8,7 @@ import { useRouter } from 'next/router'
 export default function App({ Component, pageProps }) {
   const [supabase] = useState(() => createBrowserSupabaseClient())
   const router = useRouter()
-  const showHeaderFooter = router.pathname !== '/login'
+  const showHeaderFooter = router.pathname !== '/login' && router.pathname !== '/register'
 
   return (
     <SessionContextProvider supabaseClient={supabase} initialSession={pageProps.initialSession}>

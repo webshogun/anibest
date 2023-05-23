@@ -1,23 +1,28 @@
+import { useState, useEffect } from 'react';
+import { useSupabaseClient } from '@supabase/auth-helpers-react';
 import Card from '@/components/card';
-import { supabase } from '@/lib/supabase';
 import styles from '@/styles/home.module.css'
 
-export async function getStaticProps() {
-  const { data: status } = await supabase.from('Anime').select('*').eq('status', 'ongoing');
-  const { data: animes } = await supabase.from('Anime').select('*');
+const Home = () => {
+  const supabase = useSupabaseClient();
+  const [status, setStatus] = useState([]);
+  const [animes, setAnimes] = useState([]);
 
-  return { 
-    props: {
-      animes,
-      status
+  useEffect(() => {
+    async function fetchData() {
+      const { data: status } = await supabase.from('Anime').select('*').eq('status', 'ongoing');
+      const { data: animes } = await supabase.from('Anime').select('*');
+
+      setStatus(status);
+      setAnimes(animes);
     }
-  }
-}
 
-const Home = ({ animes, status }) => {
-  return ( 
+    fetchData();
+  }, [supabase]);
+
+  return (
     <main className={styles.main}>
-      <div className='container'>
+      <div className="container">
         <div className={styles.wrapper}>
           <h2 className={styles.heading}>Now on screens</h2>
           <div className={styles.list}>
@@ -34,7 +39,7 @@ const Home = ({ animes, status }) => {
         </div>
       </div>
     </main>
-   );
-}
- 
+  );
+};
+
 export default Home;

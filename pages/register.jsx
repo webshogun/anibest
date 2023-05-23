@@ -3,23 +3,23 @@ import { useState } from 'react';
 import { useUser, useSupabaseClient } from '@supabase/auth-helpers-react';
 import styles from '@/styles/login.module.css';
 
-const Login = () => {
+const Register = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const user = useUser();
   const supabase = useSupabaseClient();
 
   async function signInWithEmail() {
-    const { error } = await supabase.auth.signInWithPassword({
+    const { error } = await supabase.auth.signUp({
       email: email,
-      password: password,
+      password: password
     });
 
     if (error) {
       alert('Error communicating with Supabase. Make sure to use a real email address!');
       console.log(error);
     } else {
-      alert('Succesfull!');
+      alert('Check your email to register!');
     }
   }
 
@@ -37,7 +37,7 @@ const Login = () => {
             <div className={styles.wrapper}>
               <div className={styles.left}>
                 <div className={styles.inner}>
-                  <h1>Hello!</h1>
+                  <h1>Welcome!</h1>
                     <input className={styles.input} type="email" placeholder='example@mail.com' onChange={(e) => setEmail(e.target.value)}/>
                     <input className={styles.input} type="password" placeholder='password' onChange={(e) => setPassword(e.target.value)} />
                   <div className={styles.add}>
@@ -65,11 +65,10 @@ const Login = () => {
         <>
           <p>hello {user.email}</p>
           <button onClick={() => signOut()}>Logout</button>
-          <Link href='/'>Go home</Link>
         </>
       )}
     </>
   )
 }
  
-export default Login;
+export default Register;

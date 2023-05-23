@@ -2,22 +2,24 @@ import Head from 'next/head';
 import { useRouter } from 'next/router';
 import { useMemo, useState, useEffect } from 'react';
 import Card from '@/components/card';
-import { supabase } from '@/lib/supabase';
+import { useSupabaseClient } from '@supabase/auth-helpers-react';
 import styles from '@/styles/catalog.module.css';
 
-export async function getStaticProps() {
-  const { data: anime } = await supabase.from('Anime').select('*')
-
-  return {
-    props: {
-      anime,
-    },
-  }
-}
-
-const Catalog = ({ anime }) => {
+const Catalog = () => {
+  const supabase = useSupabaseClient();
+  const [animes, setAnimes] = useState([]);
   const router = useRouter();
   const { type = '', status = '', genre = '' } = router.query;
+
+  useEffect(() => {
+    async function fetchData() {
+      const { data: animes } = await supabase.from('Anime').select('*');
+
+      setAnimes(animes);
+    }
+
+    fetchData();
+  }, [supabase]);
 
   const selectedFilters = useMemo(() => ({
     type,
@@ -32,7 +34,7 @@ const Catalog = ({ anime }) => {
   };
 
   const filteredAnime = useMemo(() => {
-    return anime.filter(({ type, status, genres }) => {
+    return animes.filter(({ type, status, genres }) => {
       return Object.entries(selectedFilters).reduce((acc, [key, value]) => {
         if (value && key !== 'genre' && key !== 'status') {
           return acc && type === value;
@@ -45,7 +47,7 @@ const Catalog = ({ anime }) => {
         }
       }, true);
     });
-  }, [anime, selectedFilters]);
+  }, [animes, selectedFilters]);
 
   return ( 
     <>
