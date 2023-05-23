@@ -23,8 +23,6 @@ const Login = () => {
     }
   }
 
-  console.log(user)
-
   async function signOut() {
     await supabase.auth.signOut();
   }

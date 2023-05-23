@@ -1,4 +1,5 @@
 import Card from '@/components/card';
+import Image from 'next/image';
 import { useState, useEffect } from 'react';
 import { useUser, useSupabaseClient } from '@supabase/auth-helpers-react';
 import { useRouter } from 'next/router';
@@ -13,6 +14,9 @@ const Profile = () => {
   const [plannedAnime, setPlannedAnime] = useState([]);
   const [watchingAnime, setWatchingAnime] = useState([]);
   const [abandonedAnime, setAbandonedAnime] = useState([]);
+
+  const [nickname, setNickname] = useState('');
+  const [avatar, setAvatar] = useState(null)
 
   async function signOut() {
     await supabase.auth.signOut();
@@ -110,6 +114,27 @@ const Profile = () => {
     router.push('/login');
   };
 
+  useEffect(() => {
+    const fetchUserData = async () => {
+      if (user) {
+        const { data: userData, error: userError } = await supabase
+          .from('profiles')
+          .select('username, avatar_url')
+          .eq('id', user.id)
+          .single();
+
+        if (userError) {
+          console.error('Error fetching user data:', userError);
+          return;
+        }
+        setNickname(userData?.username || '');
+        setAvatar(userData?.avatar_url || '');
+      }
+    };
+
+    fetchUserData();
+  }, [user]);
+
   return ( 
     <>
       {user === null ? (
@@ -124,56 +149,65 @@ const Profile = () => {
         <main>
           <div className='container'>
             <div className={styles.wrapper}>
-              <p>Hello, {user.email}!</p>
+            <Image className={styles.poster} src={`${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/avatars/${avatar}`} width={175} height={175} loading = 'lazy'  />
+              <p>Hello, {nickname || user.email}!</p>
               <button onClick={() => signOut()}>Logout</button>
-              <div>
-                <h2 className={styles.heading}>Watching</h2>
-                {watchingAnime.length > 0 ? (
-                  <div className={styles.list}>
-                    {watchingAnime.map((anime) => (
-                      <Card key={anime.id} anime={anime} />
-                    ))}
+              {watchingAnime.length < 1 && plannedAnime.length < 1 && watchedAnime.length < 1 && abandonedAnime.length < 1 ? (
+                <div>
+                  <p>Empty</p>
+                </div>
+              ) : (
+                <div>
+                  <div>
+                    {watchingAnime.length > 0 && (
+                      <>
+                        <h2 className={styles.heading}>Watching</h2>
+                        <div className={styles.list}>
+                          {watchingAnime.map((anime) => (
+                            <Card key={anime.id} anime={anime} />
+                          ))}
+                        </div>
+                      </>
+                    )}
                   </div>
-                ) : (
-                  <p>No anime currently being watched.</p>
-                )}
-              </div>
-              <div>
-                <h2 className={styles.heading}>Planned</h2>
-                {plannedAnime.length > 0 ? (
-                  <div className={styles.list}>
-                    {plannedAnime.map((anime) => (
-                      <Card key={anime.id} anime={anime} />
-                    ))}
+                  <div>
+                    {plannedAnime.length > 0 && (
+                      <>
+                        <h2 className={styles.heading}>Planned</h2>
+                        <div className={styles.list}>
+                          {plannedAnime.map((anime) => (
+                            <Card key={anime.id} anime={anime} />
+                          ))}
+                        </div>
+                      </>
+                    )}
                   </div>
-                ) : (
-                  <p>No anime currently being watched.</p>
-                )}
-              </div>
-              <div>
-                <h2 className={styles.heading}>Watched</h2>
-                {watchedAnime.length > 0 ? (
-                  <div className={styles.list}>
-                    {watchedAnime.map((anime) => (
-                      <Card key={anime.id} anime={anime} />
-                    ))}
+                  <div>
+                    {watchedAnime.length > 0 && (
+                      <>
+                        <h2 className={styles.heading}>Watched</h2>
+                        <div className={styles.list}>
+                          {watchedAnime.map((anime) => (
+                            <Card key={anime.id} anime={anime} />
+                          ))}
+                        </div>
+                      </>
+                    )}
                   </div>
-                ) : (
-                  <p>No watched anime found.</p>
-                )}
-              </div>
-              <div>
-                <h2 className={styles.heading}>Abandoned</h2>
-                {abandonedAnime.length > 0 ? (
-                  <div className={styles.list}>
-                    {abandonedAnime.map((anime) => (
-                      <Card key={anime.id} anime={anime} />
-                    ))}
+                  <div>
+                    {abandonedAnime.length > 0 && (
+                      <>
+                        <h2 className={styles.heading}>Abandoned</h2>
+                        <div className={styles.list}>
+                          {abandonedAnime.map((anime) => (
+                            <Card key={anime.id} anime={anime} />
+                          ))}
+                        </div>
+                      </>
+                    )}
                   </div>
-                ) : (
-                  <p>No abandoned anime found.</p>
-                )}
-              </div>
+                </div>
+              )} 
             </div>
           </div>
         </main>
