@@ -15,6 +15,72 @@ const AnimePage = () => {
   const [characters, setCharacters] = useState([]);
   const [open, setOpen] = useState(false);
   const [listButtonLabel, setListButtonLabel] = useState('Add to list');
+  const [statusCount, setStatusCount] = useState(0);
+
+
+  const calculatePercentageCounts = (counts) => {
+    const totalCount = Object.values(counts).reduce((total, count) => total + count, 0);
+  
+    const percentageCounts = Object.entries(counts).reduce((percentages, [status, count]) => {
+      const percentage = (count / totalCount) * 100;
+      percentages[status] = {
+        count,
+        percentage: percentage.toFixed(0),
+      };
+      return percentages;
+    }, {});
+  
+    return percentageCounts;
+  };
+
+
+  useEffect(() => { 
+    const getStatusCounts = async () => {
+      const statusList = ['watched', 'watching', 'planned', 'abandoned']; 
+      const statusCounts = {};
+
+      for (const status of statusList) {
+        const { data, error } = await supabase
+          .from('Favorites')
+          .select('*')
+          .eq('animeId', anime.id)
+          .eq('status', status);
+
+        if (error) {
+          console.error(`Error fetching ${status} count:`, error);
+          return;
+        }
+
+        const count = data.length > 0 ? data.length : 0;
+        statusCounts[status] = count;
+      }
+
+      setStatusCount(statusCounts);
+    };
+
+    getStatusCounts();
+  }, [anime.id]);
+
+
+  useEffect(() => {
+    const getStatusCount = async () => {
+      const { data, error } = await supabase
+        .from('Favorites')
+        .select('*')
+        .eq('animeId', anime.id)
+        .eq('status', 'watching');
+
+      if (error) {
+        console.error('Error fetching status count:', error);
+        return;
+      }
+
+      const count = data.length > 0 ? data.length : 0;
+      setStatusCount(count);
+    };
+
+    getStatusCount();
+  }, [anime.id]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -105,6 +171,8 @@ const AnimePage = () => {
     return menu === menuItem ? styles.active : '';
   };
 
+  const percentageCounts = calculatePercentageCounts(statusCount)
+
   return (
     <>
       <Head>
@@ -182,6 +250,20 @@ const AnimePage = () => {
                         <Link className={styles.genre} href={`/anime?genre=${genre}`} as={`/anime?genre=${genre}`} key={genre}>
                           {genre}
                         </Link>
+                      ))}
+                    </div>
+                    <div className={styles.rating}>
+                    {Object.entries(percentageCounts).map(([status, { count, percentage }]) => (
+                        <div key={status} className={styles.row}>
+                        <div className={styles.text}>
+                          <span>{status}</span>
+                        </div>
+                        <div className={styles.bar}>
+                          <div className={styles.result} style={{ width: `${percentage}%` }}></div>
+                        </div>
+                        <span className={styles.percentage}>{percentage}%</span>
+                        <span className={styles.count}>{count}</span>
+                      </div>
                       ))}
                     </div>
                   </>
