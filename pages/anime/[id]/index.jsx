@@ -11,17 +11,18 @@ const AnimePage = () => {
   const { menu, id } = router.query;
   const user = useUser();
   const supabase = useSupabaseClient();
-  const [anime, setAnimes] = useState([]);
+  const [anime, setAnime] = useState([]);
   const [characters, setCharacters] = useState([]);
-  const [open, setOpen] = useState(false)
-  
+  const [open, setOpen] = useState(false);
+  const [listButtonLabel, setListButtonLabel] = useState('Add to list');
+
   useEffect(() => {
     const fetchData = async () => {
       if (id) {
         const { data: animeData } = await supabase.from('Anime').select('*').eq('id', parseInt(id)).single();
         const { data: charactersData } = await supabase.from('Characters').select('*').eq('animeId', parseInt(id));
 
-        setAnimes(animeData);
+        setAnime(animeData);
         setCharacters(charactersData);
       }
     };
@@ -29,75 +30,136 @@ const AnimePage = () => {
     fetchData();
   }, [id]);
 
+  useEffect(() => {
+    const checkExistingRecord = async () => {
+      if (user && anime.id) {
+        const { data: existingRecord, error: existingError } = await supabase.from('Favorites').select('*').eq('animeId', anime.id).eq('userId', user.id).single();
+
+        if (existingError) {
+          console.error('Error fetching existing record:', existingError);
+        }
+
+        if (existingRecord) {
+          setListButtonLabel(existingRecord.status);
+        }
+      }
+    };
+
+    checkExistingRecord();
+  }, [user, anime.id]);
+
   const toggleDropdown = () => {
     setOpen(!open);
   };
 
   const updateAnimeStatus = async (status) => {
     const { data: existingRecord, error: existingError } = await supabase.from('Favorites').select('*').eq('animeId', anime.id).eq('userId', user.id).single();
-  
-    console.log(existingRecord)
 
     if (existingError) {
       console.error('Error fetching existing record:', existingError);
     }
 
     if (existingRecord === null) {
-      const { error: insertError } = await supabase
-        .from('Favorites')
-        .insert([{ userId: user.id, animeId: anime.id, status }]);
-  
+      const { error: insertError } = await supabase.from('Favorites').insert([{ userId: user.id, animeId: anime.id, status }]);
+
       if (insertError) {
         console.error('Error creating new record:', insertError);
       } else {
         console.log('New anime record created successfully!');
+        setListButtonLabel(status);
       }
     } else {
-      const { error: updateError } = await supabase
-        .from('Favorites')
-        .update({ status })
-        .eq('id', existingRecord.id);
-  
+      const { error: updateError } = await supabase.from('Favorites').update({ status }).eq('id', existingRecord.id);
+
       if (updateError) {
         console.error('Error updating anime status:', updateError);
       } else {
         console.log('Anime status updated successfully!');
+        setListButtonLabel(status);
       }
     }
-  
-    
+    setOpen(false);
   };
-  
+
+  const deleteAnimeStatus = async () => {
+    const { data: existingRecord, error: existingError } = await supabase.from('Favorites').select('*').eq('animeId', anime.id).eq('userId', user.id).single();
+
+    if (existingError) {
+      console.error('Error fetching existing record:', existingError);
+    }
+
+    if (existingRecord) {
+      const { error: deleteError } = await supabase.from('Favorites').delete().eq('id', existingRecord.id);
+
+      if (deleteError) {
+        console.error('Error deleting anime status:', deleteError);
+      } else {
+        console.log('Anime status deleted successfully!');
+        setListButtonLabel('Add to list');
+      }
+    }
+    setOpen(false);
+  };
+
   const activeMenuItem = (menuItem) => {
     return menu === menuItem ? styles.active : '';
   };
-  
-  return ( 
+
+  return (
     <>
       <Head>
         <title>{anime.title}</title>
       </Head>
-      <main className=''>
-        <div className='container'>
+      <main className="">
+        <div className="container">
           <div className={styles.wrapper}>
             <div className={styles.left}>
               <Image className={styles.poster} src={`${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/Posters/${anime.poster}`} alt={anime.title} width={250} height={355} />
-              <button className={styles.toggle} onClick={toggleDropdown}>Add to list</button>
+              <button className={styles.toggle} onClick={toggleDropdown}>
+                {listButtonLabel}
+              </button>
               {open && (
                 <div className={styles.dropdown}>
-                  <button className={styles.status} onClick={() => updateAnimeStatus('planned')}>Planned</button>
-                  <button className={styles.status} onClick={() => updateAnimeStatus('watched')}>Watched</button>
-                  <button className={styles.status} onClick={() => updateAnimeStatus('watching')}>Watching</button>
-                  <button className={styles.status} onClick={() => updateAnimeStatus('abandoned')}>Abandoned</button>
+                  {listButtonLabel !== 'planned' && (
+                    <button className={styles.status} onClick={() => updateAnimeStatus('planned')}>Planned</button>
+                  )}
+                  {listButtonLabel !== 'watched' && (
+                    <button className={styles.status} onClick={() => updateAnimeStatus('watched')}>Watched</button>
+                  )}
+                  {listButtonLabel !== 'watching' && (
+                    <button className={styles.status} onClick={() => updateAnimeStatus('watching')}>Watching</button>
+                  )}
+                  {listButtonLabel !== 'abandoned' && (
+                    <button className={styles.status} onClick={() => updateAnimeStatus('abandoned')}>Abandoned</button>
+                  )}
+                  {listButtonLabel !== 'Add to list' && (
+                    <button className={styles.delete} onClick={deleteAnimeStatus}>Delete</button>
+                  )}
                 </div>
               )}
               <ul className={styles.info}>
-                <li className={styles.item}>Type: <Link className={styles.link} href={`/anime?type=${anime.type}`} as={`/anime?type=${anime.type}`}>{anime.type}</Link></li>
-                <li className={styles.item}>Status: <Link className={styles.link} href={`/anime?status=${anime.status}`} as={`/anime?status=${anime.status}`}>{anime.status}</Link></li>
-                <li className={styles.item}>Series: <span className={styles.link}>{anime.series}</span></li>
-                <li className={styles.item}>Year: <span className={styles.link}>{anime.year}</span></li>
-                <li className={styles.item}>Time: <span className={styles.link}>{anime.time}m</span></li>
-                <li className={styles.item}>Studio: <span className={styles.link}>{anime.studio}</span></li>
+                <li className={styles.item}>
+                  Type: <Link className={styles.link} href={`/anime?type=${anime.type}`} as={`/anime?type=${anime.type}`}>
+                    {anime.type}
+                  </Link>
+                </li>
+                <li className={styles.item}>
+                  Status: <Link className={styles.link} href={`/anime?status=${anime.status}`} as={`/anime?status=${anime.status}`}>
+                    {anime.status}
+                  </Link>
+                </li>
+                <li className={styles.item}>
+                  Series: <span className={styles.link}>{anime.series}</span>
+                </li>
+                <li className={styles.item}>
+                  Year: <span className={styles.link}>{anime.year}</span>
+                </li>
+                <li className={styles.item}>
+                  Time: <span className={styles.link}>{anime.time}m</span>
+                </li>
+                <li className={styles.item}>
+                  Studio: <span className={styles.link}>{anime.studio}</span>
+                </li>
               </ul>
             </div>
             <div className={styles.right}>
@@ -106,18 +168,10 @@ const AnimePage = () => {
               </div>
               <div className={styles.main}>
                 <div className={styles.menu}>
-                  <Link className={activeMenuItem('info')} href={`/anime/${anime.id}/?menu=info`} as={`/anime/${anime.id}/?menu=info`}>
-                    Information
-                  </Link>
-                  <Link className={activeMenuItem('episodes')} href={`/anime/${anime.id}/?menu=episodes`} as={`/anime/${anime.id}/?menu=episodes`}>
-                    Series
-                  </Link>
-                  <Link className={activeMenuItem('characters')} href={`/anime/${anime.id}/?menu=characters`} as={`/anime/${anime.id}/?menu=characters`}>
-                    Characters 
-                  </Link>
-                  <Link className={activeMenuItem('authors')} href={`/anime/${anime.id}/?menu=authors`} as={`/anime/${anime.id}/?menu=authors`}>
-                    Authors
-                  </Link>
+                  <Link className={activeMenuItem('info')} href={`/anime/${anime.id}/?menu=info`} as={`/anime/${anime.id}/?menu=info`}>Information</Link>
+                  <Link className={activeMenuItem('episodes')} href={`/anime/${anime.id}/?menu=episodes`} as={`/anime/${anime.id}/?menu=episodes`}>Series</Link>
+                  <Link className={activeMenuItem('characters')} href={`/anime/${anime.id}/?menu=characters`} as={`/anime/${anime.id}/?menu=characters`}>Characters</Link>
+                  <Link className={activeMenuItem('authors')} href={`/anime/${anime.id}/?menu=authors`} as={`/anime/${anime.id}/?menu=authors`}>Authors</Link>
                 </div>
                 <div className={styles.line}></div>
                 {menu === 'info' && (
@@ -125,7 +179,9 @@ const AnimePage = () => {
                     <p className={styles.desc}>{anime.description}</p>
                     <div className={styles.genres}>
                       {anime.genres?.map((genre) => (
-                        <Link className={styles.genre} href={`/anime?genre=${genre}`} as={`/anime?genre=${genre}`} key={genre}>{genre}</Link>
+                        <Link className={styles.genre} href={`/anime?genre=${genre}`} as={`/anime?genre=${genre}`} key={genre}>
+                          {genre}
+                        </Link>
                       ))}
                     </div>
                   </>
@@ -166,7 +222,7 @@ const AnimePage = () => {
         </div>
       </main>
     </>
-   );
-}
- 
+  );
+};
+
 export default AnimePage;
