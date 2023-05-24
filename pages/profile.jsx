@@ -25,7 +25,7 @@ const Profile = () => {
   useEffect(() => {
     const fetchViewedAnime = async () => {
       if (user) {
-        const { data: watchingData, error: watchingError } = await supabase.from('Favorites').select('animeId').eq('userId', user.id).eq('status', 'watching');
+        const { data: watchingData, error: watchingError } = await supabase.from('favorites').select('anime_id').eq('user_id', user.id).eq('status', 'watching');
 
         if (watchingError) {
           console.error('Error fetching watching anime:', watchingError);
@@ -33,8 +33,8 @@ const Profile = () => {
         }
 
         if (watchingData.length > 0) {
-          const watchingAnimeIds = watchingData.map((row) => row.animeId);
-          const { data: watchingAnimeData, error: watchingAnimeError } = await supabase.from('Anime').select('*').in('id', watchingAnimeIds);
+          const watchingAnimeIds = watchingData.map((row) => row.anime_id);
+          const { data: watchingAnimeData, error: watchingAnimeError } = await supabase.from('anime').select('*').in('id', watchingAnimeIds);
 
           if (watchingAnimeError) {
             console.error('Error fetching watching anime details:', watchingAnimeError);
@@ -45,7 +45,7 @@ const Profile = () => {
           setWatchingAnime([]);
         }
 
-        const { data: plannedData, error: plannedError } = await supabase.from('Favorites').select('animeId').eq('userId', user.id).eq('status', 'planned');
+        const { data: plannedData, error: plannedError } = await supabase.from('favorites').select('anime_id').eq('user_id', user.id).eq('status', 'planned');
 
         if (plannedError) {
           console.error('Error fetching watching anime:', plannedError);
@@ -53,8 +53,8 @@ const Profile = () => {
         }
 
         if (plannedData.length > 0) {
-          const plannedAnimeIds = plannedData.map((row) => row.animeId);
-          const { data: plannedAnimeData, error: plannedAnimeError } = await supabase.from('Anime').select('*').in('id', plannedAnimeIds);
+          const plannedAnimeIds = plannedData.map((row) => row.anime_id);
+          const { data: plannedAnimeData, error: plannedAnimeError } = await supabase.from('anime').select('*').in('id', plannedAnimeIds);
 
           if (plannedAnimeError) {
             console.error('Error fetching watching anime details:', plannedAnimeError);
@@ -65,7 +65,7 @@ const Profile = () => {
           setPlannedAnime([]);
         }
 
-        const { data: watchedData, error: watchedError } = await supabase.from('Favorites').select('animeId').eq('userId', user.id).eq('status', 'watched');
+        const { data: watchedData, error: watchedError } = await supabase.from('favorites').select('anime_id').eq('user_id', user.id).eq('status', 'watched');
 
         if (watchedError) {
           console.error('Error fetching watched anime:', watchedError);
@@ -73,8 +73,8 @@ const Profile = () => {
         }
 
         if (watchedData.length > 0) {
-          const watchedAnimeIds = watchedData.map((row) => row.animeId);
-          const { data: watchedAnimeData, error: watchedAnimeError } = await supabase.from('Anime').select('*').in('id', watchedAnimeIds);
+          const watchedAnimeIds = watchedData.map((row) => row.anime_id);
+          const { data: watchedAnimeData, error: watchedAnimeError } = await supabase.from('anime').select('*').in('id', watchedAnimeIds);
 
           if (watchedAnimeError) {
             console.error('Error fetching watched anime details:', watchedAnimeError);
@@ -85,7 +85,7 @@ const Profile = () => {
           setWatchedAnime([]);
         }
 
-        const { data: abandonedData, error: abandonedError } = await supabase.from('Favorites').select('animeId').eq('userId', user.id).eq('status', 'abandoned');
+        const { data: abandonedData, error: abandonedError } = await supabase.from('favorites').select('anime_id').eq('user_id', user.id).eq('status', 'abandoned');
 
         if (abandonedError) {
           console.error('Error fetching abandoned anime:', abandonedError);
@@ -93,8 +93,8 @@ const Profile = () => {
         }
 
         if (abandonedData.length > 0) {
-          const abandonedAnimeIds = abandonedData.map((row) => row.animeId);
-          const { data: abandonedAnimeData, error: abandonedAnimeError } = await supabase.from('Anime').select('*').in('id', abandonedAnimeIds);
+          const abandonedAnimeIds = abandonedData.map((row) => row.anime_id);
+          const { data: abandonedAnimeData, error: abandonedAnimeError } = await supabase.from('anime').select('*').in('id', abandonedAnimeIds);
 
           if (abandonedAnimeError) {
             console.error('Error fetching abandoned anime details:', abandonedAnimeError);
@@ -149,7 +149,7 @@ const Profile = () => {
         <main>
           <div className='container'>
             <div className={styles.wrapper}>
-            <Image className={styles.poster} src={`${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/avatars/${avatar}`} width={175} height={175} loading = 'lazy'  />
+            <Image className={styles.poster} src={`${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/avatars/${avatar}`} alt={avatar} width={175} height={175} loading = 'lazy'  />
               <p>Hello, {nickname || user.email}!</p>
               <button onClick={() => signOut()}>Logout</button>
               {watchingAnime.length < 1 && plannedAnime.length < 1 && watchedAnime.length < 1 && abandonedAnime.length < 1 ? (

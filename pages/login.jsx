@@ -55,7 +55,7 @@ const Login = () => {
                   <span className={styles.text}>Don’t have an account? <Link className={styles.link} href='/register'>Join AniBest</Link></span>
                 </div>
               </div>
-              <img className={styles.image} src="/images/auth.jpg" alt="" />
+              <img className={styles.image} src="/images/auth.jpg" alt="Auth image" />
             </div>
           </div>
         </main>

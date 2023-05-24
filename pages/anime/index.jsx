@@ -13,7 +13,7 @@ const Catalog = () => {
 
   useEffect(() => {
     async function fetchData() {
-      const { data: animes } = await supabase.from('Anime').select('*');
+      const { data: animes } = await supabase.from('anime').select('*');
 
       setAnimes(animes);
     }

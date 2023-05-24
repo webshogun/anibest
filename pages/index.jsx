@@ -10,8 +10,8 @@ const Home = () => {
 
   useEffect(() => {
     async function fetchData() {
-      const { data: status } = await supabase.from('Anime').select('*').eq('status', 'ongoing');
-      const { data: animes } = await supabase.from('Anime').select('*');
+      const { data: status } = await supabase.from('anime').select('*').eq('status', 'ongoing');
+      const { data: animes } = await supabase.from('anime').select('*');
 
       setStatus(status);
       setAnimes(animes);

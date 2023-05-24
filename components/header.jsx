@@ -48,7 +48,7 @@ const Header = () => {
 
   useEffect(() => {
     async function fetchSearchResults() {
-      const { data, error } = await supabase.from('Anime').select('*').ilike('title', `%${searchQuery}%`);
+      const { data, error } = await supabase.from('anime').select('*').ilike('title', `%${searchQuery}%`);
 
       if (error) {
         console.error(error);
