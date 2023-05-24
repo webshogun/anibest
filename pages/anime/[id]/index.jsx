@@ -21,6 +21,7 @@ const AnimePage = () => {
   const [listButtonLabel, setListButtonLabel] = useState('Add to list');
   const [statusCount, setStatusCount] = useState(0);
   const [ratingCount, setRatingCount] = useState(0)
+  const [ratings, setRatings] = useState(null);
   const [hoveredRating, setHoveredRating] = useState(null);
 
   const handleMouseEnter = (rating) => {
@@ -32,7 +33,7 @@ const AnimePage = () => {
   };
 
   const isFilled = (rating) => {
-    return rating <= hoveredRating;
+    return rating <= (hoveredRating || ratings);
   };
 
   const activeMenuItem = (menuItem) => {
@@ -102,9 +103,20 @@ const AnimePage = () => {
 
   const deleteAnimeStatus = async () => {
     const { data: existingRecord } = await supabase.from('favorites').select('*').eq('anime_id', anime.id).eq('user_id', user.id).single();
+    const { data: rating } = await supabase.from('rating').select('*').eq('anime_id', anime.id).eq('user_id', user.id).single();
 
     if (existingRecord) {
       const { error: deleteError } = await supabase.from('favorites').delete().eq('id', existingRecord.id);
+
+      if (deleteError) {
+        console.error('Error deleting anime status:', deleteError);
+      } else {
+        console.log('Anime status deleted successfully!');
+        setListButtonLabel('Add to list');
+      }
+    }
+    if (rating) {
+      const { error: deleteError } = await supabase.from('rating').delete().eq('id', rating.id);
 
       if (deleteError) {
         console.error('Error deleting anime status:', deleteError);
@@ -182,6 +194,30 @@ const AnimePage = () => {
     checkExistingRecord();
   }, [user, anime.id]);
 
+  useEffect(() => {
+    const fetchRating = async () => {
+      if (user && anime.id) {
+        const { data, error } = await supabase
+          .from('rating')
+          .select('evaluation')
+          .eq('anime_id', anime.id)
+          .eq('user_id', user.id)
+          .single();
+
+        if (error) {
+          console.error('Error fetching user rating:', error);
+          return;
+        }
+
+        if (data) {
+          setRatings(data.evaluation);
+        }
+      }
+    };
+
+    fetchRating();
+  }, [user, anime.id]);
+
   const updateUserRating = async (rating) => {
     if (!user || !anime.id || rating === null) {
       return;
@@ -224,6 +260,7 @@ const AnimePage = () => {
 
       console.log('Rating created successfully:', createdData);
     }
+    setRatings(rating)
   };
 
   const calculatePercentageCounts = (counts) => {
@@ -292,56 +329,34 @@ const AnimePage = () => {
                 </div>
               )}
               <div className={styles.stars}>
-                <button
-                  className={`${styles.star} ${isFilled(1) ? styles.filled : ''}`}
-                  onMouseEnter={() => handleMouseEnter(1)}
-                  onMouseLeave={handleMouseLeave}
-                  onClick={() => updateUserRating(1)}
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.563.563 0 00-.586 0L6.982 20.54a.562.562 0 01-.84-.61l1.285-5.386a.562.562 0 00-.182-.557l-4.204-3.602a.563.563 0 01.321-.988l5.518-.442a.563.563 0 00.475-.345L11.48 3.5z" />
-                  </svg>
-                </button>
-                <button
-                  className={`${styles.star} ${isFilled(2) ? styles.filled : ''}`}
-                  onMouseEnter={() => handleMouseEnter(2)}
-                  onMouseLeave={handleMouseLeave}
-                  onClick={() => updateUserRating(2)}
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.563.563 0 00-.586 0L6.982 20.54a.562.562 0 01-.84-.61l1.285-5.386a.562.562 0 00-.182-.557l-4.204-3.602a.563.563 0 01.321-.988l5.518-.442a.563.563 0 00.475-.345L11.48 3.5z" />
-                  </svg>
-                </button>
-                <button
-                  className={`${styles.star} ${isFilled(3) ? styles.filled : ''}`}
-                  onMouseEnter={() => handleMouseEnter(3)}
-                  onMouseLeave={handleMouseLeave}
-                  onClick={() => updateUserRating(3)}
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.563.563 0 00-.586 0L6.982 20.54a.562.562 0 01-.84-.61l1.285-5.386a.562.562 0 00-.182-.557l-4.204-3.602a.563.563 0 01.321-.988l5.518-.442a.563.563 0 00.475-.345L11.48 3.5z" />
-                  </svg>
-                </button>
-                <button
-                  className={`${styles.star} ${isFilled(4) ? styles.filled : ''}`}
-                  onMouseEnter={() => handleMouseEnter(4)}
-                  onMouseLeave={handleMouseLeave}
-                  onClick={() => updateUserRating(4)}
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.563.563 0 00-.586 0L6.982 20.54a.562.562 0 01-.84-.61l1.285-5.386a.562.562 0 00-.182-.557l-4.204-3.602a.563.563 0 01.321-.988l5.518-.442a.563.563 0 00.475-.345L11.48 3.5z" />
-                  </svg>
-                </button>
-                <button
-                  className={`${styles.star} ${isFilled(5) ? styles.filled : ''}`}
-                  onMouseEnter={() => handleMouseEnter(5)}
-                  onMouseLeave={handleMouseLeave}
-                  onClick={() => updateUserRating(5)}
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.563.563 0 00-.586 0L6.982 20.54a.562.562 0 01-.84-.61l1.285-5.386a.562.562 0 00-.182-.557l-4.204-3.602a.563.563 0 01.321-.988l5.518-.442a.563.563 0 00.475-.345L11.48 3.5z" />
-                  </svg>
-                </button>
+                {listButtonLabel !== 'Add to list' && (
+                  <>
+                    {[1, 2, 3, 4, 5].map((value) => (
+                      <button
+                        key={value}
+                        className={`${styles.star} ${isFilled(value) ? styles.filled : ''}`}
+                        onMouseEnter={() => handleMouseEnter(value)}
+                        onMouseLeave={handleMouseLeave}
+                        onClick={() => updateUserRating(value)}
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          strokeWidth="1.5"
+                          stroke="currentColor"
+                          className="w-6 h-6"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.563.563 0 00-.586 0L6.982 20.54a.562.562 0 01-.84-.61l1.285-5.386a.562.562 0 00-.182-.557l-4.204-3.602a.563.563 0 01.321-.988l5.518-.442a.563.563 0 00.475-.345L11.48 3.5z"
+                          />
+                        </svg>
+                      </button>
+                    ))}
+                  </>
+                )}
               </div>
               <ul className={styles.info}>
                 <li className={styles.item}>
