@@ -13,13 +13,33 @@ const Catalog = () => {
 
   useEffect(() => {
     async function fetchData() {
-      const { data: animes } = await supabase.from('anime').select('*');
-
-      setAnimes(animes);
+      const { data } = await supabase.rpc('get_animes_with_ratings').select('id, title, type, year, poster');
+      setAnimes(data);
     }
 
     fetchData();
   }, [supabase]);
+
+  console.log(animes)
+
+  function generateFilterSection(title, options, filterType) {
+    return (
+      <>
+        <h2 className={styles.heading}>{title}</h2>
+        {options.map((option) => (
+          <label className={styles.item} key={option}>
+            <input
+              type="checkbox"
+              checked={selectedFilters[filterType] === option}
+              onChange={(e) => updateFilter(filterType, e.target.checked ? option : "")}
+            />
+            {option.charAt(0).toUpperCase() + option.slice(1)}
+          </label>
+        ))}
+      </>
+    );
+  }
+  
 
   const selectedFilters = useMemo(() => ({
     type,
@@ -65,25 +85,11 @@ const Catalog = () => {
               </div>
             </div>
             <div className={styles.filter}>
-              <h2 className={styles.heading}>Type</h2>
-              <label className={styles.item}><input type="checkbox" checked={selectedFilters.type === "TV Series"} onChange={(e) => updateFilter('type', e.target.checked ? "TV Series" : "")} />TV Series</label>
-              <label className={styles.item}><input type="checkbox" checked={selectedFilters.type === "Film"} onChange={(e) => updateFilter('type', e.target.checked ? "Film" : "")} />Film</label>
-              <label className={styles.item}><input type="checkbox" checked={selectedFilters.type === "OVA"} onChange={(e) => updateFilter('type', e.target.checked ? "OVA" : "")} />OVA</label>
-              <h2 className={styles.heading}>Status</h2>
-              <label className={styles.item}><input type="checkbox" checked={selectedFilters.status === "completed"} onChange={(e) => updateFilter('status', e.target.checked ? "completed" : "")} />Completed</label>
-              <label className={styles.item}><input type="checkbox" checked={selectedFilters.status === "ongoing"} onChange={(e) => updateFilter('status', e.target.checked ? "ongoing" : "")} />Ongoing</label>
-              <h2 className={styles.heading}>Genre</h2>
-              <label className={styles.item}><input type="checkbox" checked={selectedFilters.genre === "Action"} onChange={(e) => updateFilter('genre', e.target.checked ? "Action" : "")} />Action</label>
-              <label className={styles.item}><input type="checkbox" checked={selectedFilters.genre === "Adventure"} onChange={(e) => updateFilter('genre', e.target.checked ? "Adventure" : "")} />Adventure</label>
-              <label className={styles.item}><input type="checkbox" checked={selectedFilters.genre === "Comedy"} onChange={(e) => updateFilter('genre', e.target.checked ? "Comedy" : "")} />Comedy</label>
-              <label className={styles.item}><input type="checkbox" checked={selectedFilters.genre === "Drama"} onChange={(e) => updateFilter('genre', e.target.checked ? "Drama" : "")} />Drama</label>
-              <label className={styles.item}><input type="checkbox" checked={selectedFilters.genre === "Fantasy"} onChange={(e) => updateFilter('genre', e.target.checked ? "Fantasy" : "")} />Fantasy</label>
-              <label className={styles.item}><input type="checkbox" checked={selectedFilters.genre === "Horror"} onChange={(e) => updateFilter('genre', e.target.checked ? "Horror" : "")} />Horror</label>
-              <label className={styles.item}><input type="checkbox" checked={selectedFilters.genre === "Romance"} onChange={(e) => updateFilter('genre', e.target.checked ? "Romance" : "")} />Romance</label>
-              <label className={styles.item}><input type="checkbox" checked={selectedFilters.genre === "Sci-Fi"} onChange={(e) => updateFilter('genre', e.target.checked ? "Sci-Fi" : "")} />Sci-Fi</label>
-              <label className={styles.item}><input type="checkbox" checked={selectedFilters.genre === "Sports"} onChange={(e) => updateFilter('genre', e.target.checked ? "Sports" : "")} />Sports</label>
-              <label className={styles.item}><input type="checkbox" checked={selectedFilters.genre === "Superhero"} onChange={(e) => updateFilter('genre', e.target.checked ? "Superhero" : "")} />Superhero</label>
+              {generateFilterSection("Type", ["TV Series", "Film", "OVA"], "type")}
+              {generateFilterSection("Status", ["completed", "ongoing"], "status")}
+              {generateFilterSection("Genre", ["Action", "Adventure", "Comedy", "Drama", "Fantasy", "Horror", "Romance", "Sci-Fi", "Sports", "Superhero"], "genre")}
             </div>
+
           </div>
         </div>
       </main>

@@ -1,11 +1,13 @@
 import Link from 'next/link';
 import { useState } from 'react';
+import { useRouter } from 'next/router';
 import { useUser, useSupabaseClient } from '@supabase/auth-helpers-react';
 import styles from '@/styles/login.module.css';
 
 const Register = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const router = useRouter();
   const user = useUser();
   const supabase = useSupabaseClient();
 
@@ -19,19 +21,13 @@ const Register = () => {
       alert('Error communicating with Supabase. Make sure to use a real email address!');
       console.log(error);
     } else {
-      alert('Check your email to register!');
+      router.push('/')
     }
-  }
-
-  console.log(user)
-
-  async function signOut() {
-    await supabase.auth.signOut();
   }
 
   return ( 
     <>
-      {user === null ? (
+      {user === null && (
         <main className={styles.main}>
           <div className='container'>
             <div className={styles.wrapper}>
@@ -61,11 +57,6 @@ const Register = () => {
             </div>
           </div>
         </main>
-      ) : (
-        <>
-          <p>hello {user.email}</p>
-          <button onClick={() => signOut()}>Logout</button>
-        </>
       )}
     </>
   )

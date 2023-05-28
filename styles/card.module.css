@@ -1,9 +1,17 @@
 .card {
-  width: 150px;
+  flex: 1 0 135px;
+  max-width: 200px;
+  min-width: 135px;
+}
+
+.wrapper {
+  aspect-ratio: auto 150/215;
 }
 
 .poster {
   border-radius: 5px;
+  width: -webkit-fill-available;
+  height: -webkit-fill-available;
 }
 
 .title {
@@ -11,7 +19,7 @@
   font-size: 16px;
   line-height: 21px;
   margin-top: -4px;
-  max-width: 150px;
+  width: 100%;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;

@@ -5,7 +5,7 @@
 }
 
 .main {
-  max-width: 790px;
+  width: 790px;
   border-radius: 5px;
   padding: 20px 15px;
   background: #313134;
@@ -17,6 +17,13 @@
   gap: 21px;
   flex-wrap: wrap;
   justify-content: center;
+}
+
+.list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(135px, 1fr));
+  grid-gap: 21px;
+  margin: 15px 0;
 }
 
 .filter {
