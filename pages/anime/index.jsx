@@ -13,14 +13,12 @@ const Catalog = () => {
 
   useEffect(() => {
     async function fetchData() {
-      const { data } = await supabase.rpc('get_animes_with_ratings').select('id, title, type, year, poster, status, genres');
+      const { data } = await supabase.rpc('get_animes_with_ratings').select('id, title, type, year, status, genres');
       setAnimes(data);
     }
 
     fetchData();
   }, [supabase]);
-
-  console.log(animes)
 
   function generateFilterSection(title, options, filterType) {
     return (

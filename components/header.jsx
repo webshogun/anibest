@@ -82,7 +82,7 @@ const Header = () => {
                 <div className={styles.results}>
                   {searchResults.map((result) => (
                     <Link className={styles.result} key={result.id} href={`/anime/${result.id}/?menu=info`} onClick={handleSearchResultClick}>
-                      <Image className={styles.poster} src={`${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/anime/${result.poster}`} alt={result.title} width={75} height={105} /> 
+                      <Image className={styles.poster} src={`${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/anime/${result.title}`} alt={result.title} width={75} height={105} /> 
                       <div className={styles.info}>
                         <p className={styles.title}>{result.title}</p>
                         <div className={styles.add}>

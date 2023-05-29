@@ -15,104 +15,39 @@ const Profile = () => {
   const [watchingAnime, setWatchingAnime] = useState([]);
   const [abandonedAnime, setAbandonedAnime] = useState([]);
 
+  console.log(watchingAnime)
+
   const [nickname, setNickname] = useState('');
   const [avatar, setAvatar] = useState(null)
 
   async function signOut() {
     await supabase.auth.signOut();
+    router.push('/');
   }
 
   useEffect(() => {
     const fetchViewedAnime = async () => {
       if (user) {
-        const { data: watchingData, error: watchingError } = await supabase.from('favorites').select('anime_id').eq('user_id', user.id).eq('status', 'watching');
-
-        if (watchingError) {
-          console.error('Error fetching watching anime:', watchingError);
-          return;
-        }
-
-        if (watchingData.length > 0) {
-          const watchingAnimeIds = watchingData.map((row) => row.anime_id);
-          const { data: watchingAnimeData, error: watchingAnimeError } = await supabase.from('anime').select('*').in('id', watchingAnimeIds);
-
-          if (watchingAnimeError) {
-            console.error('Error fetching watching anime details:', watchingAnimeError);
+        try {
+          const { data, error } = await supabase.rpc('fetchuseranimestatus', { userid: user.id });
+  
+          if (error) {
+            console.error('Error fetching anime:', error);
           } else {
-            setWatchingAnime(watchingAnimeData);
+            const { watched, watching, planned, abandoned } = data[0];
+            setWatchedAnime(watched || []);
+            setWatchingAnime(watching || []);
+            setPlannedAnime(planned || []);
+            setAbandonedAnime(abandoned || []);
           }
-        } else {
-          setWatchingAnime([]);
-        }
-
-        const { data: plannedData, error: plannedError } = await supabase.from('favorites').select('anime_id').eq('user_id', user.id).eq('status', 'planned');
-
-        if (plannedError) {
-          console.error('Error fetching watching anime:', plannedError);
-          return;
-        }
-
-        if (plannedData.length > 0) {
-          const plannedAnimeIds = plannedData.map((row) => row.anime_id);
-          const { data: plannedAnimeData, error: plannedAnimeError } = await supabase.from('anime').select('*').in('id', plannedAnimeIds);
-
-          if (plannedAnimeError) {
-            console.error('Error fetching watching anime details:', plannedAnimeError);
-          } else {
-            setPlannedAnime(plannedAnimeData);
-          }
-        } else {
-          setPlannedAnime([]);
-        }
-
-        const { data: watchedData, error: watchedError } = await supabase.from('favorites').select('anime_id').eq('user_id', user.id).eq('status', 'watched');
-
-        if (watchedError) {
-          console.error('Error fetching watched anime:', watchedError);
-          return;
-        }
-
-        if (watchedData.length > 0) {
-          const watchedAnimeIds = watchedData.map((row) => row.anime_id);
-          const { data: watchedAnimeData, error: watchedAnimeError } = await supabase.from('anime').select('*').in('id', watchedAnimeIds);
-
-          if (watchedAnimeError) {
-            console.error('Error fetching watched anime details:', watchedAnimeError);
-          } else {
-            setWatchedAnime(watchedAnimeData);
-          }
-        } else {
-          setWatchedAnime([]);
-        }
-
-        const { data: abandonedData, error: abandonedError } = await supabase.from('favorites').select('anime_id').eq('user_id', user.id).eq('status', 'abandoned');
-
-        if (abandonedError) {
-          console.error('Error fetching abandoned anime:', abandonedError);
-          return;
-        }
-
-        if (abandonedData.length > 0) {
-          const abandonedAnimeIds = abandonedData.map((row) => row.anime_id);
-          const { data: abandonedAnimeData, error: abandonedAnimeError } = await supabase.from('anime').select('*').in('id', abandonedAnimeIds);
-
-          if (abandonedAnimeError) {
-            console.error('Error fetching abandoned anime details:', abandonedAnimeError);
-          } else {
-            setAbandonedAnime(abandonedAnimeData);
-          }
-        } else {
-          setAbandonedAnime([]);
+        } catch (error) {
+          console.error('Error fetching anime:', error);
         }
       }
     };
-
+  
     fetchViewedAnime();
   }, [user]);
-
-  const handleRedirect = () => {
-    router.push('/login');
-  };
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -137,15 +72,7 @@ const Profile = () => {
 
   return ( 
     <>
-      {user === null ? (
-        <main>
-          <div className='container'>
-            <div className={styles.wrapper}>
-              <button onClick={handleRedirect}>Login</button>
-            </div>
-          </div>
-        </main>
-      ) : (
+      {user !== null && (
         <main>
           <div className='container'>
             <div className={styles.wrapper}>

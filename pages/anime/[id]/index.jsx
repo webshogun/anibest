@@ -132,19 +132,9 @@ const AnimePage = () => {
   };
 
   const deleteAnimeStatus = async () => {
-    const { data: existingRecord, error: recordError } = await supabase
-    .from('favorites')
-    .select('*')
-    .or(`anime_id.eq.${anime.id}, user_id.eq.${user.id}`)
-    .single();
+    const { data: existingRecord, error } = await supabase.from('favorites').select('*').eq('anime_id', anime.id).eq('user_id', user.id).single();
   
-  const { data: rating, error: ratingError } = await supabase
-    .from('rating')
-    .select('*')
-    .or(`anime_id.eq.${anime.id}, user_id.eq.${user.id}`)
-    .single();
-  
-  if (recordError) {
+  if (error) {
     console.error('Error retrieving existing record:', recordError);
   } else {
     if (existingRecord) {
@@ -158,24 +148,6 @@ const AnimePage = () => {
       } else {
         console.log('Anime status deleted successfully!');
         setListButtonLabel('Add to list');
-      }
-    }
-  }
-  
-  if (ratingError) {
-    console.error('Error retrieving rating:', ratingError);
-  } else {
-    if (rating) {
-      const { error: deleteRatingError } = await supabase
-        .from('rating')
-        .delete()
-        .eq('id', rating.id);
-  
-      if (deleteRatingError) {
-        console.error('Error deleting rating:', deleteRatingError);
-      } else {
-        console.log('Rating deleted successfully!');
-        setRatings(null);
       }
     }
   }
@@ -240,7 +212,7 @@ const AnimePage = () => {
           {animeData.anime && (
             <div className={styles.wrapper}>
               <div className={styles.left}>
-                <Image className={styles.poster} src={`${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/anime/${anime.poster}`} alt={anime.title} width={250} height={355} priority={true} />
+                <Image className={styles.poster} src={`${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/anime/${anime.title}`} alt={anime.title} width={250} height={355} priority={true} />
                 <button className={styles.toggle} onClick={() => setOpen(!open)}>
                   {listButtonLabel}
                 </button>
@@ -314,7 +286,7 @@ const AnimePage = () => {
                     Time: <span className={styles.link}>{anime.time}m</span>
                   </li>
                   <li className={styles.item}>
-                    Studio: <span className={styles.link}>{anime.studio}</span>
+                    Studio: <Link className={styles.link} href={`/studio/${anime.studio}`} as={`/studio/${anime.studio}`}>{anime.studio}</Link>
                   </li>
                 </ul>
               </div>

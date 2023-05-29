@@ -9,10 +9,9 @@ const Home = () => {
   const supabase = useSupabaseClient();
   const [animes, setAnimes] = useState([]);
 
-
   useEffect(() => {
     async function fetchData() {
-      const { data } = await supabase.rpc('get_animes_with_ratings').select('id, title, type, year, poster');
+      const { data } = await supabase.rpc('get_animes_with_ratings').select('id, title, type, year');
       setAnimes(data);
     }
 
