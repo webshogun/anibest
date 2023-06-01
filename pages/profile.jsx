@@ -1,13 +1,9 @@
-import Card from '@/components/card';
-import Image from 'next/image';
-import { useState, useEffect } from 'react';
-import { useUser, useSupabaseClient } from '@supabase/auth-helpers-react';
-import { useRouter } from 'next/router';
-import styles from '@/styles/profile.module.css'
+import Card from "@/components/card";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/router";
+import styles from "@/styles/profile.module.css";
 
-const Profile = () => {
-  const user = useUser();
-  const supabase = useSupabaseClient();
+const Profile = ({ session, supabase }) => {
   const router = useRouter();
 
   const [watchedAnime, setWatchedAnime] = useState([]);
@@ -15,24 +11,21 @@ const Profile = () => {
   const [watchingAnime, setWatchingAnime] = useState([]);
   const [abandonedAnime, setAbandonedAnime] = useState([]);
 
-  console.log(watchingAnime)
-
-  const [nickname, setNickname] = useState('');
-  const [avatar, setAvatar] = useState(null)
-
   async function signOut() {
     await supabase.auth.signOut();
-    router.push('/');
+    router.push("/");
   }
 
   useEffect(() => {
     const fetchViewedAnime = async () => {
-      if (user) {
+      if (session) {
         try {
-          const { data, error } = await supabase.rpc('fetchuseranimestatus', { userid: user.id });
-  
+          const { data, error } = await supabase.rpc("fetchuseranimestatus", {
+            userid: session.user.id,
+          });
+
           if (error) {
-            console.error('Error fetching anime:', error);
+            console.error("Error fetching anime:", error);
           } else {
             const { watched, watching, planned, abandoned } = data[0];
             setWatchedAnime(watched || []);
@@ -41,45 +34,26 @@ const Profile = () => {
             setAbandonedAnime(abandoned || []);
           }
         } catch (error) {
-          console.error('Error fetching anime:', error);
+          console.error("Error fetching anime:", error);
         }
       }
     };
-  
+
     fetchViewedAnime();
-  }, [user]);
+  }, [session]);
 
-  useEffect(() => {
-    const fetchUserData = async () => {
-      if (user) {
-        const { data: userData, error: userError } = await supabase
-          .from('profiles')
-          .select('username, avatar_url')
-          .eq('id', user.id)
-          .single();
-
-        if (userError) {
-          console.error('Error fetching user data:', userError);
-          return;
-        }
-        setNickname(userData?.username || '');
-        setAvatar(userData?.avatar_url || '');
-      }
-    };
-
-    fetchUserData();
-  }, [user]);
-
-  return ( 
+  return (
     <>
-      {user !== null && (
+      {session !== null && (
         <main>
-          <div className='container'>
+          <div className="container">
             <div className={styles.wrapper}>
-            <Image className={styles.poster} src={`${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/avatars/${avatar}`} alt={avatar} width={175} height={175} loading = 'lazy'  />
-              <p>Hello, {nickname || user.email}!</p>
+              <p>Hello, {session.user.email}!</p>
               <button onClick={() => signOut()}>Logout</button>
-              {watchingAnime.length < 1 && plannedAnime.length < 1 && watchedAnime.length < 1 && abandonedAnime.length < 1 ? (
+              {watchingAnime.length < 1 &&
+              plannedAnime.length < 1 &&
+              watchedAnime.length < 1 &&
+              abandonedAnime.length < 1 ? (
                 <div>
                   <p>Empty</p>
                 </div>
@@ -134,13 +108,13 @@ const Profile = () => {
                     )}
                   </div>
                 </div>
-              )} 
+              )}
             </div>
           </div>
         </main>
       )}
     </>
-   );
-}
- 
+  );
+};
+
 export default Profile;

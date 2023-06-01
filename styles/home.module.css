@@ -20,3 +20,9 @@
   grid-gap: 26px;
   margin: 15px 0;
 }
+
+@media (max-width: 767px) {
+  .list {
+    grid-gap: 17px
+  }
+}

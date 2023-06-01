@@ -87,3 +87,15 @@
   width: 50%;
   border-radius: 0 10px 10px 0;
 }
+
+@media (max-width: 767px) {
+  .wrapper {
+    height: 55vh;
+  }
+  .image {
+    display: none;
+  }
+  .left {
+    width: 100%;
+  }
+}

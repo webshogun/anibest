@@ -1,23 +1,11 @@
-import { memo, useState, useEffect } from 'react';
-import { useSupabaseClient } from '@supabase/auth-helpers-react';
-import Card from '@/components/card';
-import styles from '@/styles/home.module.css';
+import { memo } from "react";
+import { supabase } from "@/lib/supabase";
+import Card from "@/components/card";
+import styles from "@/styles/home.module.css";
 
 const MemoizedCard = memo(Card);
 
-const Home = () => {
-  const supabase = useSupabaseClient();
-  const [animes, setAnimes] = useState([]);
-
-  useEffect(() => {
-    async function fetchData() {
-      const { data } = await supabase.rpc('get_animes_with_ratings').select('id, title, type, year');
-      setAnimes(data);
-    }
-
-    fetchData();
-  }, [supabase]);
-
+const Home = ({ animes }) => {
   return (
     <main className={styles.main}>
       <div className="container">
@@ -33,5 +21,17 @@ const Home = () => {
     </main>
   );
 };
+
+export async function getServerSideProps() {
+  const { data: animes } = await supabase
+    .rpc("get_animes_with_ratings")
+    .select("id, title, type, year");
+
+  return {
+    props: {
+      animes,
+    },
+  };
+}
 
 export default Home;

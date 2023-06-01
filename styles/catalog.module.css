@@ -52,3 +52,12 @@
   line-height: 16px;
   margin: 3px 0;
 }
+
+@media (max-width: 767px) {
+  .wrapper {
+    display: block;
+  }
+  .main {
+    width: 100%;
+  }
+}

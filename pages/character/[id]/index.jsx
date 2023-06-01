@@ -1,22 +1,23 @@
-import Head from 'next/head';
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/router';
-import { useSupabaseClient } from '@supabase/auth-helpers-react';
+import Head from "next/head";
+import Image from 'next/image';
+import { useState, useEffect } from "react";
+import { useRouter } from "next/router";
 
-import styles from '@/styles/character.module.css';
+import styles from "@/styles/character.module.css";
 
-
-
-const CharacterPage = () => {
+const CharacterPage = ({ supabase }) => {
   const router = useRouter();
   const { id } = router.query;
-  const supabase = useSupabaseClient();
   const [character, setCharacter] = useState([]);
 
   useEffect(() => {
     async function fetchData() {
       if (id) {
-        const { data: character } = await supabase.from('Characters').select('*').eq('id', parseInt(id)).single();
+        const { data: character } = await supabase
+          .from("characters")
+          .select("*")
+          .eq("id", parseInt(id))
+          .single();
 
         setCharacter(character);
       }
@@ -26,21 +27,26 @@ const CharacterPage = () => {
   }, [id]);
 
   if (!character) {
-    return (
-      <p>error</p>
-    )
-  };
+    return <p>error</p>;
+  }
 
   return (
     <>
       <Head>
         <title>{character.name}</title>
       </Head>
-      <main className=''>
+      <main className="">
         <div className="container">
           <div className={styles.wrapper}>
             <div className={styles.left}>
-              <img className={styles.poster} src={character.poster} alt={character.name} />
+              <Image
+                className={styles.poster}
+                src={`${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/characters/${character.poster}`}
+                alt={character.name}
+                width={250}
+                height={355}
+                priority={true}
+              />
             </div>
             <div className={styles.right}>
               <div className={styles.top}>
@@ -54,7 +60,7 @@ const CharacterPage = () => {
         </div>
       </main>
     </>
-  )
+  );
 };
 
 export default CharacterPage;

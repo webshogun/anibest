@@ -29,3 +29,6 @@
   font-size: 16px;
   color: #585E92;
 }
+
+@media (max-width: 767px) {
+}
