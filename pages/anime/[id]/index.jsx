@@ -56,7 +56,7 @@ const AnimePage = ({
   useEffect(() => {
     const fetchData = async () => {
       try {
-        if (id && session.user) {
+        if (id && session && session.user) {
           const favoritesResponse = await supabase
             .from("favorites")
             .select("*")
@@ -225,7 +225,7 @@ const AnimePage = ({
                           clipRule="evenodd"
                         />
                       </svg>
-                      <p className={styles.average}>{average}</p>
+                      <p className={styles.average}>{anime.average}</p>
                     </div>
                     <span className={styles.year}>{anime.year}</span>
                   </div>
@@ -567,7 +567,7 @@ const AnimePage = ({
                           clipRule="evenodd"
                         />
                       </svg>
-                      <span>{average}</span>
+                      <span>{anime.average}</span>
                     </div>
                   </div>
                   <div className={styles.main}>
@@ -729,18 +729,16 @@ const AnimePage = ({
 export async function getServerSideProps(context) {
   const { id } = context.query;
   try {
-    const [animeRes, charactersRes, averageRes, statusRes, ratingRes] =
+    const [animeRes, charactersRes, statusRes, ratingRes] =
       await Promise.all([
         supabase.from("anime").select("*").eq("id", parseInt(id)).single(),
         supabase.from("characters").select("*").eq("anime_id", parseInt(id)),
-        supabase.rpc("get_average_rating", { anime_id: id }),
         supabase.rpc("get_anime_status", { anime_id: id }),
         supabase.rpc("get_anime_rating", { anime_id: id }),
       ]);
 
     const anime = animeRes.data;
     const characters = charactersRes.data;
-    const average = averageRes.data;
     const status = statusRes.data;
     const rating = ratingRes.data;
 
@@ -748,7 +746,6 @@ export async function getServerSideProps(context) {
       props: {
         anime,
         characters,
-        average,
         status,
         rating,
       },

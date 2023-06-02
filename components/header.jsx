@@ -10,7 +10,7 @@ const Header = ({ session, supabase }) => {
   const [isMobile, setIsMobile] = useState(false);
   const [prevScrollPos, setPrevScrollPos] = useState(0);
   const [visible, setVisible] = useState(true);
-
+  
   useEffect(() => {
     const handleScroll = () => {
       const currentScrollPos = window.pageYOffset;
@@ -28,7 +28,7 @@ const Header = ({ session, supabase }) => {
 
   useEffect(() => {
     const handleResize = () => {
-      setIsMobile(window.innerWidth <= 767); // Задайте власну ширину, яка вважається мобільною
+      setIsMobile(window.innerWidth <= 767);
     };
 
     window.addEventListener("resize", handleResize);
@@ -41,18 +41,24 @@ const Header = ({ session, supabase }) => {
 
   const handleSearchClick = () => {
     setShowSearch(true);
-    document.body.classList.add(styles.hiddenOverflow);
+    if (isMobile) {
+      document.body.classList.add(styles.hiddenOverflow);
+    }
   };
 
   const handleSearchClose = () => {
     setShowSearch(false);
-    document.body.classList.remove(styles.hiddenOverflow);
+    if (isMobile) {
+      document.body.classList.remove(styles.hiddenOverflow);
+    }
   };
 
   const handleSearchResultClick = () => {
     setShowSearch(false);
     setSearchQuery("");
-    document.body.classList.remove(styles.hiddenOverflow);
+    if (isMobile) {
+      document.body.classList.remove(styles.hiddenOverflow);
+    }
   };
 
   useEffect(() => {
@@ -90,18 +96,17 @@ const Header = ({ session, supabase }) => {
                 />
                 <button className={styles.button} onClick={handleSearchClose}>
                   <svg
-                    width="12"
-                    height="12"
-                    viewBox="0 0 14 14"
-                    fill="none"
                     xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    strokeWidth={1.5}
+                    stroke="#343434"
+                    className={styles.icon}
                   >
                     <path
-                      d="M1 13L13 1M1 1L13 13"
-                      stroke="black"
-                      stroke-width="1.5"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M6 18L18 6M6 6l12 12"
                     />
                   </svg>
                 </button>
@@ -293,18 +298,17 @@ const Header = ({ session, supabase }) => {
                       onClick={handleSearchClose}
                     >
                       <svg
-                        width="12"
-                        height="12"
-                        viewBox="0 0 14 14"
-                        fill="none"
                         xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        strokeWidth={1.5}
+                        stroke="#343434"
+                        className={styles.icon}
                       >
                         <path
-                          d="M1 13L13 1M1 1L13 13"
-                          stroke="black"
-                          stroke-width="1.5"
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M6 18L18 6M6 6l12 12"
                         />
                       </svg>
                     </button>
