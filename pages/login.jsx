@@ -1,7 +1,8 @@
+import Head from 'next/head';
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
-import styles from "@/styles/login.module.css";
+import styles from "@/styles/auth.module.css";
 
 const Login = ({ session, supabase }) => {
   const [email, setEmail] = useState("");
@@ -26,12 +27,15 @@ const Login = ({ session, supabase }) => {
 
   return (
     <>
+      <Head>
+        <title>Register</title>
+      </Head>
       {session === null && (
         <main className={styles.main}>
           <div className="container">
             <div className={styles.wrapper}>
               <div className={styles.left}>
-                <div className={styles.inner}>
+                <div>
                   <h1>Hello!</h1>
                   <input
                     className={styles.input}
@@ -55,14 +59,14 @@ const Login = ({ session, supabase }) => {
                     </Link>
                   </div>
                   <button
-                    className={styles.login}
+                    className={styles.auth}
                     type="submit"
                     onClick={() => signInWithEmail()}
                   >
                     Login
                   </button>
                   <div className={styles.line}></div>
-                  <button className={styles.button}>
+                  <button className={styles.google}>
                     <svg
                       width="25"
                       height="25"

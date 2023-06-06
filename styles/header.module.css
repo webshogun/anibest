@@ -29,6 +29,11 @@
   line-height: 21px;
 }
 
+.auth {
+  display: flex;
+  gap: 13px;
+}
+
 .login {
   font-size: 14px;
   line-height: 30px;
@@ -41,7 +46,6 @@
   font-size: 14px;
   line-height: 30px;
   border-radius: 5px;
-  margin-left: 13px;
   background: #585E92;
 }
 

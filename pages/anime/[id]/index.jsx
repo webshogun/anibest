@@ -2,27 +2,37 @@ import Head from "next/head";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/router";
-import styles from "@/styles/anime.module.css";
-import { supabase } from "@/lib/supabase";
 import { useState, useEffect } from "react";
+import { supabase } from "@/lib/supabase";
+import styles from "@/styles/page.module.css";
 
-const AnimePage = ({
-  supabase,
-  session,
-  anime,
-  characters,
-  average,
-  status,
-  rating,
-}) => {
+const AnimePage = ({ anime, id, supabase, session }) => {
+  const {
+    title,
+    average,
+    type,
+    status,
+    series,
+    release_date,
+    time,
+    studio,
+    description,
+    genres,
+    status_result,
+    rating_result,
+  } = anime;
+
   const router = useRouter();
-  const { menu, id } = router.query;
-
+  const { menu } = router.query;
+  
   const [open, setOpen] = useState(false);
   const [listButtonLabel, setListButtonLabel] = useState("Add to list");
   const [ratings, setRatings] = useState(null);
   const [hoveredRating, setHoveredRating] = useState(null);
-  const [isMobile, setIsMobile] = useState(true);
+  const [isMobile, setIsMobile] = useState(false);
+  
+  const date = new Date(anime.release_date);
+  const year = date.getFullYear();
 
   useEffect(() => {
     const handleResize = () => {
@@ -55,23 +65,19 @@ const AnimePage = ({
 
   useEffect(() => {
     const fetchData = async () => {
-      try {
-        if (id && session && session.user) {
-          const favoritesResponse = await supabase
-            .from("favorites")
-            .select("*")
-            .eq("anime_id", parseInt(id))
-            .eq("user_id", session.user.id)
-            .single();
+      if (id && session && session.user) {
+        const favoritesResponse = await supabase
+          .from("favorites")
+          .select("*")
+          .eq("anime_id", parseInt(id))
+          .eq("user_id", session.user.id)
+          .single();
 
-          if (favoritesResponse.data) {
-            const { status, evaluation } = favoritesResponse.data;
-            setListButtonLabel(status);
-            setRatings(evaluation);
-          }
+        if (favoritesResponse.data) {
+          const { status, evaluation } = favoritesResponse.data;
+          setListButtonLabel(status);
+          setRatings(evaluation);
         }
-      } catch (error) {
-        console.error("Error fetching data:", error);
       }
     };
 
@@ -82,33 +88,23 @@ const AnimePage = ({
     const { data: existingRecord } = await supabase
       .from("favorites")
       .select("*")
-      .eq("anime_id", anime.id)
+      .eq("anime_id", id)
       .eq("user_id", session.user.id)
       .single();
 
     if (existingRecord === null) {
       const { error: insertError } = await supabase
         .from("favorites")
-        .insert([{ user_id: session.user.id, anime_id: anime.id, status }]);
+        .insert([{ user_id: session.user.id, anime_id: id, status }]);
 
-      if (insertError) {
-        console.error("Error creating new record:", insertError);
-      } else {
-        console.log("New anime record created successfully!");
-        setListButtonLabel(status);
-      }
+      setListButtonLabel(status);
     } else {
       const { error: updateError } = await supabase
         .from("favorites")
         .update({ status })
         .eq("id", existingRecord.id);
 
-      if (updateError) {
-        console.error("Error updating anime status:", updateError);
-      } else {
-        console.log("Anime status updated successfully!");
-        setListButtonLabel(status);
-      }
+      setListButtonLabel(status);
     }
     setOpen(false);
   };
@@ -117,46 +113,32 @@ const AnimePage = ({
     const { data: existingRecord, error } = await supabase
       .from("favorites")
       .select("*")
-      .eq("anime_id", anime.id)
+      .eq("anime_id", id)
       .eq("user_id", session.user.id)
       .single();
 
-    if (error) {
-      console.error("Error retrieving existing record:", recordError);
-    } else {
-      if (existingRecord) {
-        const { error: deleteFavoritesError } = await supabase
-          .from("favorites")
-          .delete()
-          .eq("id", existingRecord.id);
+    if (existingRecord) {
+      const { error: deleteFavoritesError } = await supabase
+        .from("favorites")
+        .delete()
+        .eq("id", existingRecord.id);
 
-        if (deleteFavoritesError) {
-          console.error("Error deleting anime status:", deleteFavoritesError);
-        } else {
-          console.log("Anime status deleted successfully!");
-          setListButtonLabel("Add to list");
-        }
-      }
+      setListButtonLabel("Add to list");
     }
 
     setOpen(false);
   };
 
   const updateUserRating = async (rating) => {
-    if (!session || !anime.id || rating === null) {
+    if (!session || !id || rating === null) {
       return;
     }
 
     const { data, error } = await supabase
       .from("favorites")
       .select("*")
-      .eq("anime_id", anime.id)
+      .eq("anime_id", id)
       .eq("user_id", session.user.id);
-
-    if (error) {
-      console.error("Error checking existing rating:", error);
-      return;
-    }
 
     if (data.length > 0) {
       const ratingId = data[0].id;
@@ -165,26 +147,12 @@ const AnimePage = ({
         .from("favorites")
         .update({ evaluation: rating })
         .eq("id", ratingId);
-
-      if (updateError) {
-        console.error("Error updating rating:", updateError);
-        return;
-      }
-
-      console.log("Rating updated successfully:", rating);
     } else {
       const { data: createdData, error: createError } = await supabase
         .from("favorites")
         .insert([
-          { anime_id: anime.id, user_id: session.user.id, evaluation: rating },
+          { anime_id: id, user_id: session.user.id, evaluation: rating },
         ]);
-
-      if (createError) {
-        console.error("Error creating rating:", createError);
-        return;
-      }
-
-      console.log("Rating created successfully:", createdData);
     }
     setRatings(rating);
   };
@@ -192,27 +160,27 @@ const AnimePage = ({
   return (
     <>
       <Head>
-        <title>{anime.title}</title>
+        <title>{title}</title>
       </Head>
-      {isMobile ? (
-        <main className="">
-          <div className="container">
-            {anime && (
-              <div className={styles.wrapper}>
+      <main>
+        <div className="container">
+          <div className={styles.wrapper}>
+            {isMobile ? (
+              <>
                 <div className={styles.image}>
                   <Image
                     className={styles.poster}
                     src={`${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/anime/${anime.title}`}
                     alt={anime.title}
-                    width={238}
-                    height={339}
+                    width={250}
+                    height={355}
                     priority={true}
                   />
                 </div>
-                <div className={styles.mobile}>
-                  <h1 className={styles.title}>{anime.title}</h1>
+                <div className={styles.content}>
+                  <h1 className={styles.title}>{title}</h1>
                   <div className={styles.add}>
-                    <div className={styles.test}>
+                    <div className={styles.average}>
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
                         viewBox="0 0 24 24"
@@ -225,41 +193,40 @@ const AnimePage = ({
                           clipRule="evenodd"
                         />
                       </svg>
-                      <p className={styles.average}>{anime.average}</p>
+                      <span>{average}</span>
                     </div>
-                    <span className={styles.year}>{anime.year}</span>
+                    <span className={styles.year}>{year}</span>
                   </div>
-                  <div className={styles.menu}>
+                  <nav className={styles.menu}>
                     <Link
                       className={activeMenuItem("info")}
-                      href={`/anime/${anime.id}/?menu=info`}
-                      as={`/anime/${anime.id}/?menu=info`}
+                      href={`/anime/[id]/?menu=info`}
+                      as={`/anime/${id}/?menu=info`}
                     >
                       Information
                     </Link>
                     <Link
                       className={activeMenuItem("episodes")}
-                      href={`/anime/${anime.id}/?menu=episodes`}
-                      as={`/anime/${anime.id}/?menu=episodes`}
+                      href={`/anime/[id]/?menu=episodes`}
+                      as={`/anime/${id}/?menu=episodes`}
                     >
                       Series
                     </Link>
                     <Link
                       className={activeMenuItem("characters")}
-                      href={`/anime/${anime.id}/?menu=characters`}
-                      as={`/anime/${anime.id}/?menu=characters`}
+                      href={`/anime/[id]/?menu=characters`}
+                      as={`/anime/${id}/?menu=characters`}
                     >
                       Characters
                     </Link>
                     <Link
                       className={activeMenuItem("authors")}
-                      href={`/anime/${anime.id}/?menu=authors`}
-                      as={`/anime/${anime.id}/?menu=authors`}
+                      href={`/anime/[id]/?menu=authors`}
+                      as={`/anime/${id}/?menu=authors`}
                     >
                       Authors
                     </Link>
-                  </div>
-                  <div className={styles.line}></div>
+                  </nav>
                   {menu === "info" && (
                     <>
                       <ul className={styles.info}>
@@ -267,44 +234,45 @@ const AnimePage = ({
                           Type:{" "}
                           <Link
                             className={styles.link}
-                            href={`/anime?type=${anime.type}`}
-                            as={`/anime?type=${anime.type}`}
+                            href={`/anime?type=${type}`}
+                            as={`/anime?type=${type}`}
                           >
-                            {anime.type}
+                            {type}
                           </Link>
                         </li>
                         <li className={styles.item}>
                           Status:{" "}
                           <Link
                             className={styles.link}
-                            href={`/anime?status=${anime.status}`}
-                            as={`/anime?status=${anime.status}`}
+                            href={`/anime?status=${status}`}
+                            as={`/anime?status=${status}`}
                           >
-                            {anime.status}
+                            {status}
                           </Link>
                         </li>
                         <li className={styles.item}>
-                          Series:{" "}
-                          <span className={styles.link}>{anime.series}</span>
+                          Series: <span className={styles.link}>{series}</span>
                         </li>
                         <li className={styles.item}>
-                          Time:{" "}
-                          <span className={styles.link}>{anime.time}m</span>
+                          Year: <span className={styles.link}>{year}</span>
+                        </li>
+                        <li className={styles.item}>
+                          Time: <span className={styles.link}>{time}m</span>
                         </li>
                         <li className={styles.item}>
                           Studio:{" "}
                           <Link
                             className={styles.link}
-                            href={`/studio/${anime.studio}`}
-                            as={`/studio/${anime.studio}`}
+                            href={`/studio/${studio}`}
+                            as={`/studio/${studio}`}
                           >
-                            {anime.studio}
+                            {studio}
                           </Link>
                         </li>
                       </ul>
-                      <p className={styles.desc}>{anime.description}</p>
+                      <p className={styles.desc}>{description}</p>
                       <div className={styles.genres}>
-                        {anime.genres?.map((genre) => (
+                        {genres?.map((genre) => (
                           <Link
                             className={styles.genre}
                             href={`/anime?genre=${genre}`}
@@ -315,12 +283,12 @@ const AnimePage = ({
                           </Link>
                         ))}
                       </div>
-                      <div className={styles.ratings}>
-                        <h2 className={styles.heading}>On people's lists</h2>
-                        <div className={styles.rating}>
-                          {status.map((item) => (
-                            <div key={item.status} className={styles.row}>
-                              <div className={styles.text}>
+                      <div className={styles.rating}>
+                        <h3 className={styles.heading}>On people's lists</h3>
+                        <div className={styles.table}>
+                          {status_result.map((item) => (
+                            <div className={styles.row} key={item.status}>
+                              <div className={styles.status}>
                                 <span>{item.status}</span>
                               </div>
                               <div className={styles.bar}>
@@ -336,18 +304,22 @@ const AnimePage = ({
                             </div>
                           ))}
                         </div>
-                        <h2 className={styles.heading}>User ratings</h2>
-                        <div className={styles.rating}>
-                          {rating.map((item) => (
+                      </div>
+                      <div className={styles.rating}>
+                        <h3 className={styles.heading}>User ratings</h3>
+                        <div className={styles.table}>
+                          {rating_result.map((item) => (
                             <div key={item.evaluation} className={styles.row}>
-                              <div className={styles.text}>
-                                <span>{item.evaluation}</span>
-                              </div>
-                              <div className={styles.bar}>
-                                <div
-                                  className={styles.result}
-                                  style={{ width: `${item.percentage}%` }}
-                                ></div>
+                              <span className={styles.status}>
+                                {item.evaluation}
+                              </span>
+                              <div>
+                                <div className={styles.bar}>
+                                  <div
+                                    className={styles.result}
+                                    style={{ width: `${item.percentage}%` }}
+                                  ></div>
+                                </div>
                               </div>
                               <span className={styles.percentage}>
                                 {item.percentage}%
@@ -359,69 +331,15 @@ const AnimePage = ({
                       </div>
                     </>
                   )}
-                  {menu === "characters" && (
-                    <>
-                      <h2 className={styles.heading}>Main characters</h2>
-                      <div className={styles.inner}>
-                        {characters.map((character) => {
-                          if (character.type === "main") {
-                            return (
-                              <Link
-                                href={`/character/[id]`}
-                                as={`/character/${character.id}`}
-                                key={character.id}
-                              >
-                                <Image
-                                  className={styles.poster}
-                                  src={`${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/characters/${character.poster}`}
-                                  alt={anime.title}
-                                  width={250}
-                                  height={355}
-                                  priority={true}
-                                />
-                                <p className={styles.name}>{character.name}</p>
-                              </Link>
-                            );
-                          }
-                        })}
-                      </div>
-                      <h2 className={styles.heading}>Minor characters</h2>
-                      <div className={styles.inner}>
-                        {characters.map((character) => {
-                          if (character.type === "Другорядний герой") {
-                            return (
-                              <Link
-                                href={`/character/[id]`}
-                                as={`/character/${character.id}`}
-                                key={character.id}
-                              >
-                                <img
-                                  src={character.poster}
-                                  alt={character.name}
-                                />
-                                <p>{character.name}</p>
-                              </Link>
-                            );
-                          }
-                        })}
-                      </div>
-                    </>
-                  )}
                 </div>
-              </div>
-            )}
-          </div>
-        </main>
-      ) : (
-        <main className="">
-          <div className="container">
-            {anime && (
-              <div className={styles.wrapper}>
-                <div className={styles.left}>
+              </>
+            ) : (
+              <>
+                <div className={styles.sidebar}>
                   <Image
                     className={styles.poster}
-                    src={`${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/anime/${anime.title}`}
-                    alt={anime.title}
+                    src={`${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/anime/${title}`}
+                    alt={title}
                     width={250}
                     height={355}
                     priority={true}
@@ -436,7 +354,7 @@ const AnimePage = ({
                     <div className={styles.dropdown}>
                       {listButtonLabel !== "planned" && (
                         <button
-                          className={styles.status}
+                          className={styles.state}
                           onClick={() => updateAnimeStatus("planned")}
                         >
                           Planned
@@ -444,7 +362,7 @@ const AnimePage = ({
                       )}
                       {listButtonLabel !== "watched" && (
                         <button
-                          className={styles.status}
+                          className={styles.state}
                           onClick={() => updateAnimeStatus("watched")}
                         >
                           Watched
@@ -452,7 +370,7 @@ const AnimePage = ({
                       )}
                       {listButtonLabel !== "watching" && (
                         <button
-                          className={styles.status}
+                          className={styles.state}
                           onClick={() => updateAnimeStatus("watching")}
                         >
                           Watching
@@ -460,7 +378,7 @@ const AnimePage = ({
                       )}
                       {listButtonLabel !== "abandoned" && (
                         <button
-                          className={styles.status}
+                          className={styles.state}
                           onClick={() => updateAnimeStatus("abandoned")}
                         >
                           Abandoned
@@ -495,7 +413,6 @@ const AnimePage = ({
                               viewBox="0 0 24 24"
                               strokeWidth="1.5"
                               stroke="currentColor"
-                              className="w-6 h-6"
                             >
                               <path
                                 strokeLinecap="round"
@@ -513,48 +430,47 @@ const AnimePage = ({
                       Type:{" "}
                       <Link
                         className={styles.link}
-                        href={`/anime?type=${anime.type}`}
-                        as={`/anime?type=${anime.type}`}
+                        href={`/anime?type=${type}`}
+                        as={`/anime?type=${type}`}
                       >
-                        {anime.type}
+                        {type}
                       </Link>
                     </li>
                     <li className={styles.item}>
                       Status:{" "}
                       <Link
                         className={styles.link}
-                        href={`/anime?status=${anime.status}`}
-                        as={`/anime?status=${anime.status}`}
+                        href={`/anime?status=${status}`}
+                        as={`/anime?status=${status}`}
                       >
-                        {anime.status}
+                        {status}
                       </Link>
                     </li>
                     <li className={styles.item}>
-                      Series:{" "}
-                      <span className={styles.link}>{anime.series}</span>
+                      Series: <span className={styles.link}>{series}</span>
                     </li>
                     <li className={styles.item}>
-                      Year: <span className={styles.link}>{anime.year}</span>
+                      Year: <span className={styles.link}>{year}</span>
                     </li>
                     <li className={styles.item}>
-                      Time: <span className={styles.link}>{anime.time}m</span>
+                      Time: <span className={styles.link}>{time}m</span>
                     </li>
                     <li className={styles.item}>
                       Studio:{" "}
                       <Link
                         className={styles.link}
-                        href={`/studio/${anime.studio}`}
-                        as={`/studio/${anime.studio}`}
+                        href={`/studio/${studio}`}
+                        as={`/studio/${studio}`}
                       >
-                        {anime.studio}
+                        {studio}
                       </Link>
                     </li>
                   </ul>
                 </div>
-                <div className={styles.right}>
+                <div className={styles.content}>
                   <div className={styles.header}>
-                    <h1 className={styles.title}>{anime.title}</h1>
-                    <div className={styles.test}>
+                    <h1 className={styles.title}>{title}</h1>
+                    <div className={styles.average}>
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
                         viewBox="0 0 24 24"
@@ -567,46 +483,45 @@ const AnimePage = ({
                           clipRule="evenodd"
                         />
                       </svg>
-                      <span>{anime.average}</span>
+                      <span>{average}</span>
                     </div>
                   </div>
-                  <div className={styles.main}>
-                    <div className={styles.menu}>
+                  <div className={styles.tabs}>
+                    <nav className={styles.menu}>
                       <Link
                         className={activeMenuItem("info")}
-                        href={`/anime/${anime.id}/?menu=info`}
-                        as={`/anime/${anime.id}/?menu=info`}
+                        href={`/anime/[id]/?menu=info`}
+                        as={`/anime/${id}/?menu=info`}
                       >
                         Information
                       </Link>
                       <Link
                         className={activeMenuItem("episodes")}
-                        href={`/anime/${anime.id}/?menu=episodes`}
-                        as={`/anime/${anime.id}/?menu=episodes`}
+                        href={`/anime/[id]/?menu=episodes`}
+                        as={`/anime/${id}/?menu=episodes`}
                       >
                         Series
                       </Link>
                       <Link
                         className={activeMenuItem("characters")}
-                        href={`/anime/${anime.id}/?menu=characters`}
-                        as={`/anime/${anime.id}/?menu=characters`}
+                        href={`/anime/[id]/?menu=characters`}
+                        as={`/anime/${id}/?menu=characters`}
                       >
                         Characters
                       </Link>
                       <Link
                         className={activeMenuItem("authors")}
-                        href={`/anime/${anime.id}/?menu=authors`}
-                        as={`/anime/${anime.id}/?menu=authors`}
+                        href={`/anime/[id]/?menu=authors`}
+                        as={`/anime/${id}/?menu=authors`}
                       >
                         Authors
                       </Link>
-                    </div>
-                    <div className={styles.line}></div>
+                    </nav>
                     {menu === "info" && (
                       <>
-                        <p className={styles.desc}>{anime.description}</p>
+                        <p className={styles.desc}>{description}</p>
                         <div className={styles.genres}>
-                          {anime.genres?.map((genre) => (
+                          {genres?.map((genre) => (
                             <Link
                               className={styles.genre}
                               href={`/anime?genre=${genre}`}
@@ -619,145 +534,93 @@ const AnimePage = ({
                         </div>
                         <div className={styles.ratings}>
                           <div className={styles.rating}>
-                            {status.map((item) => (
-                              <div key={item.status} className={styles.row}>
-                                <div className={styles.text}>
-                                  <span>{item.status}</span>
-                                </div>
-                                <div className={styles.bar}>
-                                  <div
-                                    className={styles.result}
-                                    style={{ width: `${item.percentage}%` }}
-                                  ></div>
-                                </div>
-                                <span className={styles.percentage}>
-                                  {item.percentage}%
-                                </span>
-                                <span className={styles.count}>
-                                  {item.votes}
-                                </span>
-                              </div>
-                            ))}
-                          </div>
-                          <div className={styles.rating}>
-                            {rating.map((item) => (
-                              <div key={item.evaluation} className={styles.row}>
-                                <div className={styles.text}>
-                                  <span className={styles.test}>
-                                    {item.evaluation}
+                            <h3 className={styles.heading}>
+                              On people's lists
+                            </h3>
+                            <div className={styles.table}>
+                              {status_result.map((item) => (
+                                <div className={styles.row} key={item.status}>
+                                  <div className={styles.status}>
+                                    <span>{item.status}</span>
+                                  </div>
+                                  <div className={styles.bar}>
+                                    <div
+                                      className={styles.result}
+                                      style={{ width: `${item.percentage}%` }}
+                                    ></div>
+                                  </div>
+                                  <span className={styles.percentage}>
+                                    {item.percentage}%
+                                  </span>
+                                  <span className={styles.count}>
+                                    {item.votes}
                                   </span>
                                 </div>
-                                <div className={styles.bar}>
-                                  <div
-                                    className={styles.result}
-                                    style={{ width: `${item.percentage}%` }}
-                                  ></div>
-                                </div>
-                                <span className={styles.percentage}>
-                                  {item.percentage}%
-                                </span>
-                                <span className={styles.count}>
-                                  {item.votes}
-                                </span>
-                              </div>
-                            ))}
+                              ))}
+                            </div>
                           </div>
-                        </div>
-                      </>
-                    )}
-                    {menu === "characters" && (
-                      <>
-                        <h2 className={styles.heading}>Main characters</h2>
-                        <div className={styles.inner}>
-                          {characters.map((character) => {
-                            if (character.type === "main") {
-                              return (
-                                <Link
-                                  href={`/character/[id]`}
-                                  as={`/character/${character.id}`}
-                                  key={character.id}
+                          <div className={styles.rating}>
+                            <h3 className={styles.heading}>User ratings</h3>
+                            <div className={styles.table}>
+                              {rating_result.map((item) => (
+                                <div
+                                  key={item.evaluation}
+                                  className={styles.row}
                                 >
-                                  <Image
-                                    className={styles.poster}
-                                    src={`${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/characters/${character.poster}`}
-                                    alt={anime.title}
-                                    width={250}
-                                    height={355}
-                                    priority={true}
-                                  />
-                                  <p className={styles.name}>
-                                    {character.name}
-                                  </p>
-                                </Link>
-                              );
-                            }
-                          })}
-                        </div>
-                        <h2 className={styles.heading}>Minor characters</h2>
-                        <div className={styles.inner}>
-                          {characters.map((character) => {
-                            if (character.type === "Другорядний герой") {
-                              return (
-                                <Link
-                                  href={`/character/[id]`}
-                                  as={`/character/${character.id}`}
-                                  key={character.id}
-                                >
-                                  <img
-                                    src={character.poster}
-                                    alt={character.name}
-                                  />
-                                  <p>{character.name}</p>
-                                </Link>
-                              );
-                            }
-                          })}
+                                  <span className={styles.status}>
+                                    {item.evaluation}
+                                  </span>
+                                  <div>
+                                    <div className={styles.bar}>
+                                      <div
+                                        className={styles.result}
+                                        style={{ width: `${item.percentage}%` }}
+                                      ></div>
+                                    </div>
+                                  </div>
+                                  <span className={styles.percentage}>
+                                    {item.percentage}%
+                                  </span>
+                                  <span className={styles.count}>
+                                    {item.votes}
+                                  </span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
                         </div>
                       </>
                     )}
                   </div>
                 </div>
-              </div>
+              </>
             )}
           </div>
-        </main>
-      )}
+        </div>
+      </main>
     </>
   );
 };
 
 export async function getServerSideProps(context) {
   const { id } = context.query;
-  try {
-    const [animeRes, charactersRes, statusRes, ratingRes] =
-      await Promise.all([
-        supabase.from("anime").select("*").eq("id", parseInt(id)).single(),
-        supabase.from("characters").select("*").eq("anime_id", parseInt(id)),
-        supabase.rpc("get_anime_status", { anime_id: id }),
-        supabase.rpc("get_anime_rating", { anime_id: id }),
-      ]);
+  const [animeRes, charactersRes] = await Promise.all([
+    supabase.from("anime").select("*").eq("id", parseInt(id)).single(),
+    supabase.from("characters").select("*").eq("anime_id", parseInt(id)),
+  ]);
 
-    const anime = animeRes.data;
-    const characters = charactersRes.data;
-    const status = statusRes.data;
-    const rating = ratingRes.data;
+  const anime = animeRes.data;
+  const characters = charactersRes.data;
 
-    return {
-      props: {
-        anime,
-        characters,
-        status,
-        rating,
-      },
-    };
-  } catch (error) {
-    console.error("Error fetching anime data:", error);
-    return {
-      props: {
-        error: true,
-      },
-    };
-  }
+  console.log(anime.release_date);
+
+  return {
+    props: {
+      id,
+      anime,
+      characters,
+    },
+  };
 }
 
 export default AnimePage;

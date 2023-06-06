@@ -1,5 +1,6 @@
 import Card from "@/components/card";
 import { useState, useEffect } from "react";
+import Head from 'next/head';
 import { useRouter } from "next/router";
 import styles from "@/styles/profile.module.css";
 
@@ -44,6 +45,9 @@ const Profile = ({ session, supabase }) => {
 
   return (
     <>
+      <Head>
+        <title>Profile</title>
+      </Head>
       {session !== null && (
         <main>
           <div className="container">

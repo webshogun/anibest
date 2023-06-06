@@ -1,4 +1,5 @@
 import { memo, useState, useEffect } from "react";
+import Head from 'next/head';
 import { useRouter } from "next/router";
 import Card from "@/components/card";
 import styles from "@/styles/home.module.css";
@@ -31,18 +32,23 @@ const Studio = ({supabase}) => {
   }, [id]);
 
   return (
-    <main className={styles.main}>
-      <div className="container">
-        <div className={styles.wrapper}>
-          <h2 className={styles.heading}>{id}</h2>
-          <div className={styles.list}>
-            {animes.map((anime) => (
-              <MemoizedCard key={anime.id} anime={anime} />
-            ))}
+    <>
+      <Head>
+        <title>{id}</title>
+      </Head>
+      <main className={styles.main}>
+        <div className="container">
+          <div className={styles.wrapper}>
+            <h2 className={styles.heading}>{id}</h2>
+            <div className={styles.list}>
+              {animes.map((anime) => (
+                <MemoizedCard key={anime.id} anime={anime} />
+              ))}
+            </div>
           </div>
         </div>
-      </div>
-    </main>
+      </main>
+    </>
   );
 };
 

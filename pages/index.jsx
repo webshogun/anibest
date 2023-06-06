@@ -1,35 +1,43 @@
 import { memo } from "react";
-import { supabase } from "@/lib/supabase";
+import Head from "next/head";
 import Card from "@/components/card";
+import { supabase } from "@/lib/supabase";
 import styles from "@/styles/home.module.css";
 
 const MemoizedCard = memo(Card);
 
-const Home = ({ animes }) => {
+const Home = ({ ongoing }) => {
   return (
-    <main className={styles.main}>
-      <div className="container">
-        <div className={styles.wrapper}>
-          <h2 className={styles.heading}>Anime</h2>
-          <div className={styles.list}>
-            {animes.map((anime) => (
-              <MemoizedCard key={anime.id} anime={anime} />
-            ))}
+    <>
+      <Head>
+        <title>AniBest</title>
+      </Head>
+      <main className={styles.main}>
+        <div className="container">
+          <div className={styles.wrapper}>
+            <h2 className={styles.heading}>Now on screens</h2>
+            <div className={styles.list}>
+              {ongoing.map((anime) => (
+                <MemoizedCard key={anime.id} anime={anime} />
+              ))}
+            </div>
           </div>
         </div>
-      </div>
-    </main>
+      </main>
+    </>
   );
 };
 
 export async function getServerSideProps() {
-  const { data: animes } = await supabase
+  const { data: ongoing } = await supabase
     .rpc("get_animes_with_ratings")
-    .select("id, title, type, year");
+    .select("id, title, type, release_date, status")
+    .eq("status", "ongoing")
+    .limit(6);
 
   return {
     props: {
-      animes,
+      ongoing,
     },
   };
 }

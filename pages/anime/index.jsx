@@ -155,7 +155,7 @@ const Catalog = ({ animes }) => {
                       "Romance",
                       "Sci-Fi",
                       "Sports",
-                      "Superhero",
+                      "School",
                     ],
                     "genre"
                   )}
@@ -172,7 +172,7 @@ const Catalog = ({ animes }) => {
 export async function getServerSideProps() {
   const { data: animes } = await supabase
     .rpc("get_animes_with_ratings")
-    .select("id, title, type, year, status, genres");
+    .select("id, title, type, release_date, status, genres");
 
   return {
     props: {
