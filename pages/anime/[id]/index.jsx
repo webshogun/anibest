@@ -20,18 +20,19 @@ const AnimePage = ({ anime, id, supabase, session }) => {
     genres,
     status_result,
     rating_result,
+    episodes,
   } = anime;
 
   const router = useRouter();
   const { menu } = router.query;
-  
+
   const [open, setOpen] = useState(false);
   const [listButtonLabel, setListButtonLabel] = useState("Add to list");
   const [ratings, setRatings] = useState(null);
   const [hoveredRating, setHoveredRating] = useState(null);
   const [isMobile, setIsMobile] = useState(false);
-  
-  const date = new Date(anime.release_date);
+
+  const date = new Date(release_date);
   const year = date.getFullYear();
 
   useEffect(() => {
@@ -334,6 +335,20 @@ const AnimePage = ({ anime, id, supabase, session }) => {
                       </div>
                     </>
                   )}
+                  {menu === "episodes" && (
+                    <div className={styles.episodes}>
+                      {episodes?.map((episode) => (
+                        <Link
+                          className={styles.episode}
+                          href={`/anime/6/episode/${episode.id}`}
+                          key={episode.id}
+                          link={episode}
+                        >
+                          {episode.id} series
+                        </Link>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </>
             ) : (
@@ -595,6 +610,20 @@ const AnimePage = ({ anime, id, supabase, session }) => {
                           </div>
                         </div>
                       </>
+                    )}
+                    {menu === "episodes" && (
+                      <div className={styles.episodes}>
+                        {episodes?.map((episode) => (
+                          <Link
+                            className={styles.episode}
+                            href={`/anime/6/episode/${episode.id}`}
+                            key={episode.id}
+                            link={episode}
+                          >
+                            {episode.id} series
+                          </Link>
+                        ))}
+                      </div>
                     )}
                   </div>
                 </div>
