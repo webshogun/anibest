@@ -19,7 +19,7 @@ const Card = ({ anime }) => {
           alt={anime.title}
           width={150}
           height={215}
-          priority={true}
+          loading="lazy"
         />
       </div>
       <h2 className={styles.title}>{anime.title}</h2>

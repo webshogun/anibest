@@ -36,7 +36,7 @@ const Catalog = ({ animes }) => {
                 updateFilter(filterType, e.target.checked ? option : "")
               }
             />
-            {option.charAt(0).toUpperCase() + option.slice(1)}
+            <span>{option.charAt(0).toUpperCase() + option.slice(1)}</span>
           </label>
         ))}
       </>

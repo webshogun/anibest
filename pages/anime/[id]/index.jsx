@@ -250,9 +250,12 @@ const AnimePage = ({ anime, id, supabase, session }) => {
                             {status}
                           </Link>
                         </li>
-                        <li className={styles.item}>
-                          Series: <span className={styles.link}>{series}</span>
-                        </li>
+                        {type === "TV Series" && (
+                          <li className={styles.item}>
+                            Series:{" "}
+                            <span className={styles.link}>{series}</span>
+                          </li>
+                        )}
                         <li className={styles.item}>
                           Year: <span className={styles.link}>{year}</span>
                         </li>
@@ -446,9 +449,11 @@ const AnimePage = ({ anime, id, supabase, session }) => {
                         {status}
                       </Link>
                     </li>
-                    <li className={styles.item}>
-                      Series: <span className={styles.link}>{series}</span>
-                    </li>
+                    {type === "TV Series" && (
+                      <li className={styles.item}>
+                        Series: <span className={styles.link}>{series}</span>
+                      </li>
+                    )}
                     <li className={styles.item}>
                       Year: <span className={styles.link}>{year}</span>
                     </li>
@@ -611,8 +616,6 @@ export async function getServerSideProps(context) {
 
   const anime = animeRes.data;
   const characters = charactersRes.data;
-
-  console.log(anime.release_date);
 
   return {
     props: {
