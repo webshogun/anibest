@@ -25,12 +25,14 @@ html, body, #__next {
 
 main {
   padding: 85px 0;
+  height: 100%;
 }
 
 .container {
   margin: 0 auto;
   padding: 0 10px;
   max-width: 1080px;
+  height: -webkit-fill-available;
 }
 
 body, h1, h2, h3, h4, h5, h6, p, ol, ul, li, button {

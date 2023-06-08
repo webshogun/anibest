@@ -1,7 +1,7 @@
 import { supabase } from "@/lib/supabase";
 import Link from "next/link";
 import styles from "@/styles/player.module.css";
-import React, { useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Hls from "hls.js";
 
 const Player = ({ anime, episode }) => {
@@ -23,17 +23,22 @@ const Player = ({ anime, episode }) => {
 
   return (
     <>
-      <main>
+      <main className={styles.main}>
         <div className="container">
           <div className={styles.wrapper}>
             <div>
               <div className={styles.header}>
-                <h3>
+                <h3 className={styles.title}>
                   {anime.title} {episode.id} episode
                 </h3>
-                <h4>{episode.name}</h4>
+                <h4 className={styles.name}>{episode.name}</h4>
               </div>
-              <video className={styles.player} ref={videoRef} controls />
+              <video
+                className={styles.player}
+                ref={videoRef}
+                preload
+                controls
+              />
               <div className={styles.inner}>
                 {previousEpisode >= 1 && (
                   <Link

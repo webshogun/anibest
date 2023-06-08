@@ -340,7 +340,7 @@ const AnimePage = ({ anime, id, supabase, session }) => {
                       {episodes?.map((episode) => (
                         <Link
                           className={styles.episode}
-                          href={`/anime/6/episode/${episode.id}`}
+                          href={`/anime/${id}/episode/${episode.id}`}
                           key={episode.id}
                           link={episode}
                         >
@@ -616,7 +616,7 @@ const AnimePage = ({ anime, id, supabase, session }) => {
                         {episodes?.map((episode) => (
                           <Link
                             className={styles.episode}
-                            href={`/anime/6/episode/${episode.id}`}
+                            href={`/anime/${id}/episode/${episode.id}`}
                             key={episode.id}
                             link={episode}
                           >
