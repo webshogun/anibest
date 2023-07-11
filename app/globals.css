@@ -19,7 +19,9 @@ body::-webkit-scrollbar-thumb {
   border-radius: 10px;
 }
 
-html, body, #__next {
+html,
+body,
+#__next {
   height: 100%;
 }
 
@@ -35,16 +37,30 @@ main {
   height: -webkit-fill-available;
 }
 
-body, h1, h2, h3, h4, h5, h6, p, ol, ul, li, button {
+body,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p,
+ol,
+ul,
+li,
+button {
   margin: 0;
   padding: 0;
 }
 
-*, *::before, *::after {
+*,
+*::before,
+*::after {
   box-sizing: border-box;
 }
 
-ol, ul {
+ol,
+ul {
   list-style: none;
 }
 
@@ -53,7 +69,8 @@ a {
   text-decoration: none;
 }
 
-button, input {
+button,
+input {
   cursor: pointer;
   border: none;
   background: transparent;
@@ -70,7 +87,7 @@ label {
   main {
     padding: 0;
   }
-  
+
   .container {
     margin: 0;
     padding: 0;
